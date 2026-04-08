@@ -1,75 +1,135 @@
-# Getting Started with Create React App
+# EcoTrack (Carbon AI)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React-based web application for carbon emissions tracking and environmental sustainability management. EcoTrack helps organizations monitor, report, and reduce their carbon footprint through real-time monitoring, Scope 1–3 automation, forecasting, and audit-ready reporting.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Real-time Monitoring**: Unified visibility across facilities with live emissions signals and anomaly alerts.
+- **Scope 1–3 Automation**: Structured data capture and workflows aligned to GHG Protocol and reporting cycles.
+- **Forecasting & Scenarios**: Model trajectories and initiatives to prioritize emission reduction efforts.
+- **Audit-Ready Reporting**: Exportable narratives and evidence trails designed for stakeholders and assurance.
+- **User Authentication**: Secure login/logout with Supabase.
+- **Dashboard**: Interactive panels for emissions, energy usage, reports, and carbon credit purchases.
+- **Responsive Design**: Dark-themed UI with Tailwind CSS and smooth animations via Framer Motion.
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Before setting up, ensure you have the following installed:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Node.js** (v14 or higher): Download from [nodejs.org](https://nodejs.org/) (LTS recommended).
+- **npm** (comes with Node.js) or **yarn/pnpm** (optional alternatives).
+- **Git** (for cloning the repo, if needed).
 
-### `npm test`
+Verify installations:
+```bash
+node --version
+npm --version
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Alternative Setup with Conda
 
-### `npm run build`
+If you prefer using Conda for environment management (e.g., for isolation or multiple projects), follow these steps instead of the npm setup below.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Install Conda** (if not installed):
+   - Download Miniconda from [miniconda.com](https://docs.conda.io/en/latest/miniconda.html).
+   - Verify: `conda --version`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Create and Activate Environment**:
+   ```bash
+   conda create -n ecotrack-env nodejs
+   conda activate ecotrack-env
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Clone the Repository** (if not already done):
+   ```bash
+   git clone https://github.com/prasanna9701/EcoTrack.git
+   cd EcoTrack
+   ```
 
-### `npm run eject`
+4. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+   This installs all required packages (see [DEPENDENCIES.md](DEPENDENCIES.md) for details).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+5. **Environment Configuration** (Optional):
+   - The app uses Supabase for backend. Credentials are pre-configured in `src/pages/supabaseClient.js`.
+   - If you need to customize (e.g., your own Supabase project), update the URL and key there.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+6. **Run the App**:
+   - Development: `npm start`
+   - Test: `npm test`
+   - Build: `npm run build`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+7. **Deactivate Environment** (when done):
+   ```bash
+   conda deactivate
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Installation & Setup (npm)
+
+- **Development Mode**:
+  ```bash
+  npm start
+  ```
+  Opens the app at [http://localhost:3000](http://localhost:3000). The page reloads on changes.
+
+- **Testing**:
+  ```bash
+  npm test
+  ```
+  Runs the test suite in interactive watch mode.
+
+- **Build for Production**:
+  ```bash
+  npm run build
+  ```
+  Creates an optimized build in the `build/` folder, ready for deployment.
+
+- **Eject** (Advanced - Not Recommended):
+  ```bash
+  npm run eject
+  ```
+  Ejects from Create React App for custom configuration. This is irreversible.
+
+## Project Structure
+
+```
+EcoTrack/
+├── public/                 # Static assets (HTML, icons, etc.)
+├── src/
+│   ├── pages/              # React components (home, emission, login, etc.)
+│   ├── App.js              # Main app component with routing
+│   ├── index.js            # App entry point
+│   └── ...                 # Other React files
+├── supabase/               # Supabase-related files
+├── package.json            # Dependencies and scripts
+├── tailwind.config.js      # Tailwind CSS config
+└── README.md               # This file
+```
+
+## Dependencies
+
+For a detailed breakdown of all dependencies and their purposes, see [DEPENDENCIES.md](DEPENDENCIES.md).
+
+## Contributing
+
+1. Fork the repo and create a feature branch.
+2. Make changes and run tests: `npm test`.
+3. Submit a pull request with a clear description.
+
+## License
+
+This project is private. Contact the owner for usage rights.
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [React Documentation](https://reactjs.org/)
+- [Supabase Docs](https://supabase.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Create React App](https://facebook.github.io/create-react-app/docs/getting-started)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# EcoTrack
-# EcoTrack
-# carbon_ai
-# carbon_ai
-# carbon_ai
+## Developers 
+prasanna : lavangamprasanna@gmail.com
+Akhil    : akhilreddymogilla@gmail.com
