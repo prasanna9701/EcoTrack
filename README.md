@@ -128,3 +128,8 @@ This project is private. Contact the owner for usage rights.
 - [Supabase Docs](https://supabase.com/docs)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Create React App](https://facebook.github.io/create-react-app/docs/getting-started)
+
+
+## Developers 
+prasanna : lavangamprasanna@gmail.com
+Akhil    : akhilreddymogilla@gmail.com
