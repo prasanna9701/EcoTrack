@@ -1,4 +1,5 @@
 import React from "react";
+import { useDataContext } from "../context/DataContext";
 // Sidebar is rendered by the app layout (App.js)
 
 const pageStyles = {
@@ -127,6 +128,13 @@ const statusBadge = (status) => ({
 });
 
 function Emission() {
+  const { globalEmissions, isProcessing } = useDataContext();
+  
+  const scope1 = globalEmissions.breakdown?.scope1?.value || 0;
+  const scope2 = globalEmissions.breakdown?.scope2?.value || 0;
+  // Default to static if 0 for visual purposes of the dashboard if needed, but we connect real data:
+  const scope3 = globalEmissions.breakdown?.scope3?.value || 0;
+
   return (
     <div style={pageStyles}>
       {/* ✅ Main Content */}
@@ -143,17 +151,17 @@ function Emission() {
           <div style={cardGrid}>
             <div style={cardStyles}>
               <div style={cardTitle}>Scope 1</div>
-              <div style={cardValue}>4,200 t CO₂e</div>
+               {isProcessing ? <div style={{width:'80px', height:'28px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <div style={cardValue}>{scope1} t CO₂e</div>}
             </div>
 
             <div style={cardStyles}>
               <div style={cardTitle}>Scope 2</div>
-              <div style={cardValue}>6,900 t CO₂e</div>
+               {isProcessing ? <div style={{width:'80px', height:'28px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <div style={cardValue}>{scope2} t CO₂e</div>}
             </div>
 
             <div style={cardStyles}>
               <div style={cardTitle}>Scope 3</div>
-              <div style={cardValue}>7,320 t CO₂e</div>
+               {isProcessing ? <div style={{width:'80px', height:'28px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <div style={cardValue}>{scope3} t CO₂e</div>}
             </div>
           </div>
         </section>

@@ -7,10 +7,13 @@ A modern React-based web application for carbon emissions tracking and environme
 - **Real-time Monitoring**: Unified visibility across facilities with live emissions signals and anomaly alerts.
 - **Scope 1–3 Automation**: Structured data capture and workflows aligned to GHG Protocol and reporting cycles.
 - **Forecasting & Scenarios**: Model trajectories and initiatives to prioritize emission reduction efforts.
-- **Audit-Ready Reporting**: Exportable narratives and evidence trails designed for stakeholders and assurance.
+- **Audit-Ready Reporting**: Exportable narratives, backend emails natively pushed securely over edge-networking layers.
 - **User Authentication**: Secure login/logout with Supabase.
-- **Dashboard**: Interactive panels for emissions, energy usage, reports, and carbon credit purchases.
-- **Responsive Design**: Dark-themed UI with Tailwind CSS and smooth animations via Framer Motion.
+- **Real-time Peer Benchmarking**: Empowers instant scoring algorithm updates syncing dashboard displays via optimized PubSub tracking natively simulating growth coaching.
+- **Precision Grounding**: Calculates real-world conversion metrics applying strict India-grid float calculations removing UX gamifications limits.
+- **Intelligent OCR NLP**: Extracts inputs dynamically mimicking visual file-parsing through conversational safety cycles before storing database parameters natively.
+- **Dashboard**: Interactive panels for emissions, energy usage, configured entirely into Framer Motion.
+- **Responsive Design**: Dark-themed UI with Tailwind CSS and smooth animations natively attached organically.
 
 ## Prerequisites
 

@@ -62,6 +62,9 @@ import Reports from "./pages/reports";
 import Purchase from "./pages/purchase";
 import LandingPage from "./pages/landingpage";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import EcoAssistant from "./pages/EcoAssistant";
+import DataTab from "./pages/data";
+import { DataProvider } from "./context/DataContext";
 
 function AppRoutes() {
   const location = useLocation();
@@ -81,6 +84,7 @@ function AppRoutes() {
     <div style={{ display: "flex" }}>
       {/* SHOW SIDEBAR ONLY AFTER LOGIN */}
       {!isAuthRoute && <Sidebar />}
+      {!isAuthRoute && <EcoAssistant />}
 
       <div style={{ flex: 1 }}>
         <Routes>
@@ -137,6 +141,14 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/data"
+            element={
+              <ProtectedRoute>
+                <DataTab />
+              </ProtectedRoute>
+            }
+          />
 
         </Routes>
       </div>
@@ -146,11 +158,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <SidebarProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </SidebarProvider>
+    <DataProvider>
+      <SidebarProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </SidebarProvider>
+    </DataProvider>
   );
 }
 
