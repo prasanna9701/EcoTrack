@@ -1,8 +1,9 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
+import { motion } from "framer-motion";
+import { useDataContext } from "../context/DataContext";
 
 const pageStyles = {
   minHeight: "100vh",
@@ -141,7 +142,7 @@ const metricValueStyles = {
 
 const metricDeltaStyles = (positive) => ({
   fontSize: "11px",
-  color: positive ? "#4ade80" : "#f97316",
+  color: positive ? "#4ade80" : "#facc15",
 });
 
 const progressBarOuterStyles = {
@@ -153,13 +154,12 @@ const progressBarOuterStyles = {
   overflow: "hidden",
 };
 
-const progressBarInnerStyles = (value) => ({
-  width: `${value}%`,
+const progressBarInnerStyles = {
   height: "100%",
   borderRadius: "999px",
   background: "linear-gradient(90deg, #16a34a, #22c55e, #4ade80, #a3e635)",
   boxShadow: "0 0 12px rgba(34, 197, 94, 0.7)",
-});
+};
 
 const smallListStyles = {
   listStyle: "none",
@@ -181,6 +181,40 @@ const Home = () => {
   const [hoverLogout, setHoverLogout] = useState(false);
   const [hoverPanels, setHoverPanels] = useState({});
 
+  const { isProcessing, globalEmissions } = useDataContext();
+
+  const [emissionsData, setEmissionsData] = useState({
+    totalMT: 0,
+    performanceRank: "-% vs last year",
+    positive: true,
+    progress: 0,
+    details: [
+      { label: "Renewables share", value: "0%", color: "#a7f3d0" },
+      { label: "Offsets applied", value: "0 t", color: "#a5b4fc" },
+      { label: "High-risk facilities", value: "0 sites", color: "#fca5a5" },
+    ]
+  });
+
+  useEffect(() => {
+      const ownedCredits = 5; 
+      let newProgress = globalEmissions.requiredCredits > 0 
+          ? Math.min(100, Math.floor((ownedCredits / globalEmissions.requiredCredits) * 100))
+          : 100;
+
+      const dynamicDetails = [
+         { label: "Offsets applied", value: `${ownedCredits} t`, color: "#a5b4fc" },
+         { label: "Unaccounted required", value: `${Math.max(0, globalEmissions.requiredCredits - ownedCredits).toFixed(2)} t`, color: "#fca5a5" }
+      ];
+
+      setEmissionsData({
+        totalMT: globalEmissions.totalEmissionsMT || 0,
+        performanceRank: `Grade ${globalEmissions.confidenceScore === 'High' ? 'A' : 'B'} : In Sync`,
+        positive: globalEmissions.confidenceScore === 'High',
+        progress: newProgress,
+        details: dynamicDetails
+      });
+  }, [globalEmissions]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login", { replace: true });
@@ -188,18 +222,14 @@ const Home = () => {
 
   const panels = [
     {
-      title: "Emissions this year",
+      title: "Real-time Emissions",
       tag: "Scope 1 • 2 • 3",
       metrics: [
-        { label: "Total CO₂e", value: "18,420 t" },
-        { label: "vs last year", value: "-12.4%", positive: true },
+        { label: "Total CO₂e", value: `${emissionsData.totalMT} t` },
+        { label: "Benchmarking", value: emissionsData.performanceRank, positive: emissionsData.positive },
       ],
-      progress: 64,
-      details: [
-        { label: "Renewables share", value: "62%", color: "#a7f3d0" },
-        { label: "Offsets applied", value: "4,100 t", color: "#a5b4fc" },
-        { label: "High-risk facilities", value: "3 sites", color: "#fca5a5" },
-      ],
+      progress: emissionsData.progress,
+      details: emissionsData.details,
     },
     {
       title: "Key initiatives",
@@ -262,20 +292,45 @@ const Home = () => {
                   <div style={metricRowStyles}>
                     <div>
                       <div style={metricLabelStyles}>{panel.metrics[0].label}</div>
-                      <div style={metricValueStyles}>{panel.metrics[0].value}</div>
+                      {isProcessing ? (
+                         <div style={{ width: "80px", height: "24px", background: "rgba(255,255,255,0.1)", borderRadius: "6px", marginTop: "4px" }} className="animate-pulse" />
+                      ) : (
+                         <motion.div 
+                           key={panel.metrics[0].value} // Dynamic re-animation trigger 
+                           initial={{ opacity: 0, y: 10 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           transition={{ duration: 0.6 }}
+                           style={metricValueStyles}>
+                            {panel.metrics[0].value}
+                         </motion.div>
+                      )}
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={metricLabelStyles}>{panel.metrics[1].label}</div>
-                      <div style={metricDeltaStyles(panel.metrics[1].positive)}>
-                        {panel.metrics[1].value}
-                      </div>
+                      {isProcessing ? (
+                         <div style={{ width: "60px", height: "16px", background: "rgba(255,255,255,0.1)", borderRadius: "4px", marginTop: "8px", marginLeft: "auto" }} className="animate-pulse" />
+                      ) : (
+                         <motion.div 
+                           key={panel.metrics[1].value}
+                           initial={{ opacity: 0 }}
+                           animate={{ opacity: 1 }}
+                           style={metricDeltaStyles(panel.metrics[1].positive)}>
+                            {panel.metrics[1].value}
+                         </motion.div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {panel.progress && (
+                {panel.progress !== undefined && (
                   <div style={progressBarOuterStyles}>
-                    <div style={progressBarInnerStyles(panel.progress)} />
+                    <motion.div 
+                      key={panel.progress}
+                      style={progressBarInnerStyles}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${panel.progress}%` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                    />
                   </div>
                 )}
 

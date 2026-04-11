@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useDataContext } from "../context/DataContext";
 // Sidebar is rendered by the app layout (App.js)
 
 const pageStyles = {
@@ -61,6 +62,16 @@ const progressBarInnerStyles = (value, color) => ({
 });
 
 function Energy() {
+  const { utilityData, isProcessing, globalEmissions } = useDataContext();
+
+  const totalConsumption = useMemo(() => {
+     let total = 0;
+     utilityData.forEach(item => {
+        if (item.type === 'Electricity') total += item.value;
+     });
+     return total;
+  }, [utilityData]);
+
   return (
     <div style={pageStyles}>
       <main style={mainStyles}>
@@ -82,19 +93,19 @@ function Energy() {
           >
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Total Consumption</p>
-              <h3 style={{ color: "#facc15", fontSize: "18px" }}>1,240 MWh</h3>
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#facc15", fontSize: "18px" }}>{totalConsumption || 1240} kWh</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>CO₂ Emissions</p>
-              <h3 style={{ color: "#f87171", fontSize: "18px" }}>320 t</h3>
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#f87171", fontSize: "18px" }}>{(globalEmissions.breakdown?.scope2?.value || 320)} t</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Renewable Share</p>
-              <h3 style={{ color: "#4ade80", fontSize: "18px" }}>62%</h3>
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#4ade80", fontSize: "18px" }}>62%</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Efficiency Improvement</p>
-              <h3 style={{ color: "#22c55e", fontSize: "18px" }}>+14%</h3>
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#22c55e", fontSize: "18px" }}>+14%</h3>}
             </div>
           </div>
         </section>
