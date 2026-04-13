@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useDataContext } from "../context/DataContext";
+import { generateCarbonReport } from "../utils/carbonLogicEngine";
 
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background: "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
   padding: "24px",
 };
@@ -16,15 +18,15 @@ const mainStyles = {
 };
 
 const titleStyles = { fontSize: "24px", fontWeight: 600, marginBottom: "12px" };
-const subTitleStyles = { fontSize: "14px", color: "#9ca3af", marginBottom: "20px" };
+const subTitleStyles = { fontSize: "14px", color: "#475569", marginBottom: "20px" };
 
 const sectionStyles = {
-  backgroundColor: "rgba(15, 23, 42, 0.95)",
+  backgroundColor: "#ffffff",
   borderRadius: "16px",
   padding: "24px",
   marginBottom: "24px",
-  border: "1px solid rgba(74, 222, 128, 0.3)",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  border: "1px solid #dcfce7",
+  boxShadow: "0 4px 14px rgba(15,23,42,0.08)",
 };
 
 const buttonStyles = (disabled) => ({
@@ -51,7 +53,7 @@ const providerCardStyles = (selected) => ({
   borderRadius: "12px",
   padding: "12px 16px",
   border: selected ? "2px solid #4ade80" : "1px solid #6b7280",
-  backgroundColor: selected ? "rgba(34,197,94,0.15)" : "rgba(0,0,0,0.1)",
+  backgroundColor: selected ? "#dcfce7" : "#f8fafc",
   cursor: "pointer",
   transition: "all 0.2s",
   display: "flex",
@@ -75,16 +77,75 @@ const providers = [
 ];
 
 const Purchase = () => {
+  const { utilityData } = useDataContext();
   const [selectedProvider, setSelectedProvider] = useState(providers[0]);
-  const [purchaseAmount, setPurchaseAmount] = useState(0);
+  const monthMap = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  };
+  const parseBillingPeriod = (billingPeriod) => {
+    if (!billingPeriod || typeof billingPeriod !== "string") return null;
+    const [monthRaw, yearRaw] = billingPeriod.trim().split(/\s+/);
+    if (!monthRaw || !yearRaw) return null;
+    const month = monthMap[monthRaw.slice(0, 3).toLowerCase()];
+    const year = Number(yearRaw);
+    if (month === undefined || Number.isNaN(year)) return null;
+    return { month, year };
+  };
 
-  const totalEmission = 18420; // example tCO2e from company
+  const availablePeriods = useMemo(() => {
+    const map = new Map();
+    utilityData.forEach((item) => {
+      const parsed = parseBillingPeriod(item.billingPeriod);
+      if (!parsed) return;
+      const key = `${parsed.month}-${parsed.year}`;
+      if (!map.has(key)) {
+        map.set(key, { ...parsed, label: `${item.billingPeriod}` });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => (b.year - a.year) || (b.month - a.month));
+  }, [utilityData]);
+  const selectedPeriod = availablePeriods[0] || {
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
+    label: "Current period",
+  };
+  const filteredData = useMemo(
+    () =>
+      utilityData.filter((item) => {
+        const parsed = parseBillingPeriod(item.billingPeriod);
+        return parsed && parsed.month === selectedPeriod.month && parsed.year === selectedPeriod.year;
+      }),
+    [utilityData, selectedPeriod.month, selectedPeriod.year]
+  );
+
+  const totalEmission = useMemo(() => {
+    let scope1Vol = 0;
+    let scope2kWh = 0;
+    filteredData.forEach((item) => {
+      if (item.missingFields?.length > 0) return;
+      if (item.type === "Gas") {
+        let val = item.value || 0;
+        if (item.unit === "m3") val = val * 0.353147;
+        scope1Vol += val;
+      } else if (item.type === "Electricity") {
+        scope2kWh += item.value || 0;
+      }
+    });
+    const payload = {};
+    if (scope1Vol > 0) payload.scope1 = { volume: scope1Vol, unit: "therms" };
+    if (scope2kWh > 0) payload.scope2 = { kWh: scope2kWh, region: "india" };
+    return generateCarbonReport(payload).totalEmissionsMT || 0;
+  }, [filteredData]);
+  const purchaseAmount = totalEmission;
+  const totalCost = Number((purchaseAmount * selectedProvider.pricePerTon).toFixed(2));
+  const recordsInPeriod = filteredData.length;
+  const hasData = recordsInPeriod > 0;
 
   const handlePurchase = () => {
     alert(
-      `Purchased ${purchaseAmount} tCO2e credits from ${selectedProvider.name} for $${purchaseAmount * selectedProvider.pricePerTon}`
+      `Purchased ${purchaseAmount} tCO2e credits from ${selectedProvider.name} for $${totalCost}`
     );
-    setPurchaseAmount(0);
   };
 
   return (
@@ -98,12 +159,26 @@ const Purchase = () => {
         {/* Company Emissions */}
         <section style={sectionStyles}>
           <h2 style={titleStyles}>Company Emissions</h2>
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "14px", background: "#f8fafc", marginBottom: "14px" }}>
+            <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "6px" }}>Reporting Period</div>
+            <div style={{ fontSize: "16px", fontWeight: 600, color: "#0f172a" }}>
+              {selectedPeriod.label}
+            </div>
+            <div style={{ marginTop: "8px", fontSize: "12px", color: "#64748b" }}>
+              {recordsInPeriod} uploaded record{recordsInPeriod === 1 ? "" : "s"}
+            </div>
+          </div>
           <p style={subTitleStyles}>
-            Total CO₂e emissions this year:{" "}
+            Total CO₂e emissions:{" "}
             <span style={{ fontWeight: 700, fontSize: "18px", color: "#4ade80" }}>
               {totalEmission} t
             </span>
           </p>
+          {!hasData && (
+            <p style={{ fontSize: "12px", color: "#64748b", marginTop: "-8px" }}>
+              No uploaded data found for this period.
+            </p>
+          )}
         </section>
 
         {/* Select Provider */}
@@ -127,15 +202,9 @@ const Purchase = () => {
         <section style={sectionStyles}>
           <h2 style={titleStyles}>Purchase Amount</h2>
           <div style={{ display: "flex", alignItems: "center", marginTop: "8px" }}>
-            <input
-              type="number"
-              min={0}
-              max={totalEmission}
-              value={purchaseAmount}
-              onChange={(e) => setPurchaseAmount(Number(e.target.value))}
-              placeholder="Enter tons"
-              style={inputStyles}
-            />
+            <div style={{ ...inputStyles, background: "#f8fafc", display: "flex", alignItems: "center" }}>
+              ${totalCost}
+            </div>
             <button
               style={buttonStyles(purchaseAmount <= 0)}
               onClick={handlePurchase}
@@ -155,7 +224,7 @@ const Purchase = () => {
               <span style={{ fontWeight: 700, color: "#4ade80" }}>{purchaseAmount} tCO₂e</span> credits
               from <strong>{selectedProvider.name}</strong> for{" "}
               <span style={{ fontWeight: 700, color: "#4ade80" }}>
-                ${purchaseAmount * selectedProvider.pricePerTon}
+                ${totalCost}
               </span>
               .
             </p>

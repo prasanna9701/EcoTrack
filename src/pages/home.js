@@ -8,9 +8,8 @@ import { useDataContext } from "../context/DataContext";
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background:
-    "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
 };
@@ -39,12 +38,12 @@ const headerTitleStyles = {
 const headerTitleTextStyles = {
   fontSize: "24px",
   fontWeight: 600,
-  color: "#f9fafb",
+  color: "#0f172a",
 };
 
 const headerSubtitleStyles = {
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "#475569",
 };
 
 const headerRightStyles = {
@@ -55,11 +54,11 @@ const headerRightStyles = {
 
 const pillStyles = {
   borderRadius: "999px",
-  padding: "6px 12px",
-  fontSize: "11px",
-  border: "1px solid rgba(52, 211, 153, 0.5)",
-  color: "#a7f3d0",
-  backgroundColor: "rgba(6, 78, 59, 0.6)",
+  padding: "7px 12px",
+  fontSize: "12px",
+  border: "1px solid #bfdbfe",
+  color: "#1e3a8a",
+  backgroundColor: "#eff6ff",
 };
 
 const logoutButtonStyles = {
@@ -69,14 +68,14 @@ const logoutButtonStyles = {
   width: "36px",
   height: "36px",
   borderRadius: "50%",
-  backgroundColor: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.2)",
+  backgroundColor: "#ffffff",
+  border: "1px solid #cbd5e1",
   cursor: "pointer",
   transition: "all 0.2s ease",
 };
 
 const logoutButtonHover = {
-  backgroundColor: "rgba(255,255,255,0.15)",
+  backgroundColor: "#f1f5f9",
   transform: "scale(1.1)",
 };
 
@@ -87,17 +86,17 @@ const contentGridStyles = {
 };
 
 const panelStyles = {
-  backgroundColor: "rgba(15, 23, 42, 0.95)",
+  backgroundColor: "#ffffff",
   borderRadius: "16px",
   padding: "20px",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
-  boxShadow: "0 12px 32px rgba(0,0,0,0.3)",
+  border: "1px solid #e2e8f0",
+  boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)",
   transition: "all 0.2s ease",
 };
 
 const panelHover = {
   transform: "translateY(-4px)",
-  boxShadow: "0 18px 40px rgba(0,0,0,0.4)",
+  boxShadow: "0 14px 28px rgba(15, 23, 42, 0.12)",
 };
 
 const panelTitleRowStyles = {
@@ -110,16 +109,16 @@ const panelTitleRowStyles = {
 const panelTitleStyles = {
   fontSize: "16px",
   fontWeight: 600,
-  color: "#e5e7eb",
+  color: "#0f172a",
 };
 
 const panelTagStyles = {
   fontSize: "11px",
   padding: "4px 10px",
   borderRadius: "999px",
-  backgroundColor: "rgba(22, 163, 74, 0.12)",
-  color: "#bbf7d0",
-  border: "1px solid rgba(74, 222, 128, 0.4)",
+  backgroundColor: "#f1f5f9",
+  color: "#334155",
+  border: "1px solid #cbd5e1",
 };
 
 const metricRowStyles = {
@@ -131,18 +130,19 @@ const metricRowStyles = {
 
 const metricLabelStyles = {
   fontSize: "12px",
-  color: "#9ca3af",
+  color: "#64748b",
 };
 
 const metricValueStyles = {
   fontSize: "22px",
   fontWeight: 600,
-  color: "#bbf7d0",
+  color: "#0f172a",
 };
 
 const metricDeltaStyles = (positive) => ({
-  fontSize: "11px",
-  color: positive ? "#4ade80" : "#facc15",
+  fontSize: "12px",
+  color: positive ? "#166534" : "#b45309",
+  fontWeight: 600,
 });
 
 const progressBarOuterStyles = {
@@ -150,7 +150,7 @@ const progressBarOuterStyles = {
   width: "100%",
   height: "8px",
   borderRadius: "999px",
-  background: "rgba(15, 23, 42, 0.8)",
+  background: "#e2e8f0",
   overflow: "hidden",
 };
 
@@ -168,7 +168,7 @@ const smallListStyles = {
   display: "flex",
   flexDirection: "column",
   gap: "8px",
-  fontSize: "12px",
+  fontSize: "13px",
 };
 
 const smallListItemStyles = {
@@ -181,39 +181,42 @@ const Home = () => {
   const [hoverLogout, setHoverLogout] = useState(false);
   const [hoverPanels, setHoverPanels] = useState({});
 
-  const { isProcessing, globalEmissions } = useDataContext();
+  const { isProcessing, globalEmissions, utilityData } = useDataContext();
 
   const [emissionsData, setEmissionsData] = useState({
     totalMT: 0,
-    performanceRank: "-% vs last year",
+    performanceRank: "Awaiting benchmark",
     positive: true,
     progress: 0,
     details: [
-      { label: "Renewables share", value: "0%", color: "#a7f3d0" },
-      { label: "Offsets applied", value: "0 t", color: "#a5b4fc" },
-      { label: "High-risk facilities", value: "0 sites", color: "#fca5a5" },
+      { label: "Renewables share", value: "0%", color: "#334155" },
+      { label: "Offsets applied", value: "0 t", color: "#334155" },
+      { label: "High-risk facilities", value: "0 sites", color: "#334155" },
     ]
   });
 
   useEffect(() => {
-      const ownedCredits = 5; 
+      const uploadCount = utilityData.length;
+      const ownedCredits = uploadCount;
       let newProgress = globalEmissions.requiredCredits > 0 
           ? Math.min(100, Math.floor((ownedCredits / globalEmissions.requiredCredits) * 100))
-          : 100;
+          : 0;
 
       const dynamicDetails = [
-         { label: "Offsets applied", value: `${ownedCredits} t`, color: "#a5b4fc" },
-         { label: "Unaccounted required", value: `${Math.max(0, globalEmissions.requiredCredits - ownedCredits).toFixed(2)} t`, color: "#fca5a5" }
+         { label: "Offsets applied", value: `${ownedCredits} t`, color: "#334155" },
+         { label: "Outstanding requirement", value: `${Math.max(0, globalEmissions.requiredCredits - ownedCredits).toFixed(2)} t`, color: "#334155" }
       ];
 
+      const initiativeProgress = Math.min(100, uploadCount * 10);
       setEmissionsData({
         totalMT: globalEmissions.totalEmissionsMT || 0,
-        performanceRank: `Grade ${globalEmissions.confidenceScore === 'High' ? 'A' : 'B'} : In Sync`,
+        performanceRank: globalEmissions.confidenceScore === 'High' ? "Verified data quality" : "Data review in progress",
         positive: globalEmissions.confidenceScore === 'High',
         progress: newProgress,
-        details: dynamicDetails
+        details: dynamicDetails,
+        initiativeProgress
       });
-  }, [globalEmissions]);
+  }, [globalEmissions, utilityData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -223,22 +226,22 @@ const Home = () => {
   const panels = [
     {
       title: "Real-time Emissions",
-      tag: "Scope 1 • 2 • 3",
+      tag: "Scope 1-3",
       metrics: [
         { label: "Total CO₂e", value: `${emissionsData.totalMT} t` },
-        { label: "Benchmarking", value: emissionsData.performanceRank, positive: emissionsData.positive },
+        { label: "Data Status", value: emissionsData.performanceRank, positive: emissionsData.positive },
       ],
       progress: emissionsData.progress,
       details: emissionsData.details,
     },
     {
       title: "Key initiatives",
-      tag: "In-flight",
+      tag: "Program status",
       details: [
-        { label: "Data center cooling optimization", value: "54% complete", color: "#4ade80" },
-        { label: "Fleet electrification", value: "32% complete", color: "#22c55e" },
-        { label: "Office lighting retrofit", value: "76% complete", color: "#a3e635" },
-        { label: "Supplier engagement program", value: "Planning", color: "#facc15" },
+        { label: "Data center cooling optimization", value: `${Math.round((emissionsData.initiativeProgress || 0) * 0.8)}% complete`, color: "#334155" },
+        { label: "Fleet electrification", value: `${Math.round((emissionsData.initiativeProgress || 0) * 0.6)}% complete`, color: "#334155" },
+        { label: "Office lighting retrofit", value: `${Math.round((emissionsData.initiativeProgress || 0) * 0.9)}% complete`, color: "#334155" },
+        { label: "Supplier engagement program", value: utilityData.length > 0 ? "In progress" : "Not started", color: "#334155" },
       ],
     },
   ];
@@ -255,7 +258,7 @@ const Home = () => {
             </p>
           </div>
           <div style={headerRightStyles}>
-            <div style={pillStyles}>Net-zero trajectory: on track</div>
+            <div style={pillStyles}>Net-zero trajectory: On track</div>
             <div
               style={{ ...logoutButtonStyles, ...(hoverLogout ? logoutButtonHover : {}) }}
               onMouseEnter={() => setHoverLogout(true)}

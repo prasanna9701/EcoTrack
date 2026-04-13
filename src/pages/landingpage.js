@@ -80,99 +80,32 @@ export default function LandingPage() {
     setLoading(true);
   
     try {
-      // Insert into Supabase
       const { error } = await supabase
         .from("demo_requests")
         .insert([{ email: trimmed, created_at: new Date().toISOString() }]);
   
-      if (error) throw error; // Only throw if Supabase insert fails
+      if (error) throw error;
   
-      // Call Edge function asynchronously, don't block submission
       fetch("https://ltmuuqlqmjhcbbtyxhox.supabase.co/functions/v1/hyper-task", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: trimmed }),
       })
         .then((res) => res.json())
-        .then((res) => console.log("Edge function response:", res))
-        .catch((err) => console.warn("Edge function failed:", err));
+        .catch(() => {});
   
-      // Success feedback
       setEmail("");
       setShowModal(false);
-      alert("✅ Demo request submitted successfully!");
+      window.alert("Demo request submitted successfully.");
     } catch (err) {
-      console.error("Supabase insert failed:", err);
       setSubmitError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-//   const handleDemoSubmit = async () => {
-//     const trimmed = email.trim();
-
-//     if (!trimmed) {
-//       setSubmitError("Please enter a valid work email.");
-//       return;
-//     }
-
-//     setSubmitError("");
-//     setLoading(true);
-
-//     try {
-//       const { error } = await supabase.from("demo_requests").insert([
-//         {
-//           email: trimmed,
-//           created_at: new Date().toISOString(),
-//         },
-//       ]);
-
-//       if (error) throw error;
-
-//       const response = await fetch(
-//         "https://ltmuuqlqmjhcbbtyxhox.supabase.co/functions/v1/hyper-task",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//           },
-//           body: JSON.stringify({ email: trimmed }),
-//         }
-//       );
-
-//       const result = await response.json();
-//       console.log("Edge Function response:", result);
-
-//       if (!response.ok) {
-//         throw new Error("Email sending failed");
-//       }
-
-//       alert("✅ Demo request submitted successfully!");
-//       setShowModal(false);
-//       setEmail("");
-//     } catch (err) {
-//       console.error(err);
-
-//       try {
-//         const key = "ecotrack_demo_requests_local";
-//         const prev = JSON.parse(localStorage.getItem(key) || "[]");
-//         prev.push({
-//           email: trimmed,
-//           created_at: new Date().toISOString(),
-//         });
-//         localStorage.setItem(key, JSON.stringify(prev));
-//       } catch {
-//         /* ignore */
-//       }
-
-//       setSubmitError("Something went wrong. Please try again.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#070a12] text-slate-200 antialiased">
+    <div className="relative min-h-screen overflow-x-hidden bg-white text-slate-700 antialiased">
       {/* Ambient background */}
       <div
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"
@@ -188,22 +121,22 @@ export default function LandingPage() {
       />
 
       {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#070a12]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700 text-sm font-bold text-slate-950">
               E
             </span>
-            <span className="text-lg font-semibold tracking-tight text-white">
+            <span className="text-lg font-semibold tracking-tight text-slate-900">
               EcoTrack
             </span>
           </div>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">
-            <a href="#features" className="transition hover:text-white">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+            <a href="#features" className="transition hover:text-slate-900">
               Product
             </a>
-            <a href="#pricing" className="transition hover:text-white">
+            <a href="#pricing" className="transition hover:text-slate-900">
               Plans
             </a>
           </nav>
@@ -215,7 +148,7 @@ export default function LandingPage() {
                 setSubmitError("");
                 setShowModal(true);
               }}
-              className="rounded-full border border-white/10 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-emerald-500/40 hover:bg-white/[0.04] sm:px-4 sm:text-sm"
+              className="rounded-full border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-emerald-500/40 hover:bg-slate-100 sm:px-4 sm:text-sm"
             >
               Request demo
             </button>
@@ -242,11 +175,11 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mt-4 text-balance text-3xl font-semibold tracking-tight text-white sm:text-5xl sm:leading-[1.1]"
+              className="mt-4 text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl sm:leading-[1.1]"
             >
               Measure emissions with clarity. Act with confidence.
             </motion.h1>
-            <p className="mt-5 text-pretty text-base leading-relaxed text-slate-400 sm:text-lg">
+            <p className="mt-5 text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
               Centralize Scope 1, 2, and 3 data, align teams on reduction initiatives,
               and produce investor-grade sustainability reporting—without spreadsheet chaos.
             </p>
@@ -265,7 +198,7 @@ export default function LandingPage() {
                   setSubmitError("");
                   setShowModal(true);
                 }}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 px-8 py-3.5 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/[0.04]"
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
               >
                 Schedule a walkthrough
               </button>
@@ -277,14 +210,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mx-auto mt-16 max-w-4xl rounded-2xl border border-white/[0.08] bg-slate-900/50 p-6 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-10"
+            className="mx-auto mt-16 max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/70 sm:p-10"
           >
-            <div className="flex flex-col gap-2 border-b border-white/[0.06] pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Emissions overview
                 </p>
-                <p className="mt-1 text-lg font-semibold text-white">
+                <p className="mt-1 text-lg font-semibold text-slate-900">
                   Year-to-date intensity
                 </p>
               </div>
@@ -301,7 +234,7 @@ export default function LandingPage() {
                 />
               ))}
             </div>
-            <div className="mt-6 grid gap-4 border-t border-white/[0.06] pt-6 sm:grid-cols-3">
+            <div className="mt-6 grid gap-4 border-t border-slate-200 pt-6 sm:grid-cols-3">
               {[
                 { label: "Reporting period", value: "FY 2026 YTD" },
                 { label: "Data coverage", value: "Scope 1–3" },
@@ -309,7 +242,7 @@ export default function LandingPage() {
               ].map((row) => (
                 <div key={row.label}>
                   <p className="text-xs text-slate-500">{row.label}</p>
-                  <p className="mt-1 text-sm font-medium text-slate-200">{row.value}</p>
+                  <p className="mt-1 text-sm font-medium text-slate-700">{row.value}</p>
                 </div>
               ))}
             </div>
@@ -319,14 +252,14 @@ export default function LandingPage() {
         {/* Features */}
         <section
           id="features"
-          className="border-t border-white/[0.06] bg-slate-950/40 py-20"
+          className="border-t border-slate-200 bg-slate-50 py-20"
         >
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
                 Built for sustainability and finance teams
               </h2>
-              <p className="mt-3 text-slate-400">
+              <p className="mt-3 text-slate-600">
                 A disciplined workflow from ingestion to disclosure—so numbers reconcile and
                 narratives stay consistent.
               </p>
@@ -339,13 +272,13 @@ export default function LandingPage() {
                     key={f.title}
                     whileHover={{ y: -2 }}
                     transition={{ duration: 0.2 }}
-                    className="rounded-2xl border border-white/[0.06] bg-[#0c101c] p-6 shadow-lg shadow-black/20"
+                    className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
                       <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-white">{f.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    <h3 className="mt-4 text-base font-semibold text-slate-900">{f.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
                       {f.description}
                     </p>
                   </motion.div>
@@ -359,10 +292,10 @@ export default function LandingPage() {
         <section id="pricing" className="py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
                 Plans that scale with your footprint
               </h2>
-              <p className="mt-3 text-slate-400">
+              <p className="mt-3 text-slate-600">
                 Pricing depends on sites, data volume, and integrations. We'll align a package
                 to your operating model.
               </p>
@@ -375,11 +308,11 @@ export default function LandingPage() {
                   className={`rounded-2xl border p-8 ${
                     plan.highlighted
                       ? "border-emerald-500/40 bg-emerald-500/[0.06] shadow-xl shadow-emerald-900/20"
-                      : "border-white/[0.06] bg-[#0c101c]"
+                      : "border-slate-200 bg-white"
                   }`}
                 >
-                  <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{plan.blurb}</p>
+                  <h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{plan.blurb}</p>
                   <button
                     type="button"
                     onClick={() => {
@@ -389,7 +322,7 @@ export default function LandingPage() {
                     className={`mt-8 w-full rounded-full py-2.5 text-sm font-semibold transition ${
                       plan.highlighted
                         ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-                        : "border border-white/10 text-slate-200 hover:border-white/20 hover:bg-white/[0.04]"
+                        : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-100"
                     }`}
                   >
                     {plan.cta}
@@ -411,13 +344,13 @@ export default function LandingPage() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0c101c] p-8 shadow-2xl"
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="demo-modal-title" className="text-xl font-semibold text-white">
+            <h2 id="demo-modal-title" className="text-xl font-semibold text-slate-900">
               Request a demo
             </h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-slate-600">
               Share your work email and we'll follow up with next steps.
             </p>
             <input
@@ -429,7 +362,7 @@ export default function LandingPage() {
                 setSubmitError("");
               }}
               placeholder="you@company.com"
-              className="mt-6 w-full rounded-xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none ring-emerald-500/0 transition focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
+              className="mt-6 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-emerald-500/0 transition focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
             />
             {submitError && (
               <p className="mt-2 text-sm text-red-400">{submitError}</p>
@@ -449,7 +382,7 @@ export default function LandingPage() {
                   setShowModal(false);
                   setSubmitError("");
                 }}
-                className="text-sm text-slate-500 transition hover:text-slate-300"
+                className="text-sm text-slate-500 transition hover:text-slate-700"
               >
                 Cancel
               </button>
@@ -458,7 +391,7 @@ export default function LandingPage() {
         </div>
       )}
 
-      <footer className="border-t border-white/[0.06] py-10">
+      <footer className="border-t border-slate-200 py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-sm text-slate-500 sm:flex-row sm:text-left sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} EcoTrack. All rights reserved.</p>
           <p className="max-w-md">

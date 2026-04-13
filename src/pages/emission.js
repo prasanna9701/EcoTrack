@@ -5,9 +5,8 @@ import { useDataContext } from "../context/DataContext";
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background:
-    "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
 };
@@ -20,13 +19,13 @@ const mainStyles = {
 const infoSectionStyles = {
     marginTop: '24px',
     padding: '16px',
-    backgroundColor: 'rgba(15,23,42,0.85)',
+    backgroundColor: '#f8fafc',
     borderRadius: '16px',
-    border: '1px solid rgba(74,222,128,0.3)',
+    border: '1px solid #dcfce7',
   };
   
   const infoTitleStyles = {
-    color: '#bbf7d0',
+    color: '#166534',
     fontSize: '16px',
     marginBottom: '8px',
   };
@@ -34,15 +33,15 @@ const infoSectionStyles = {
   const infoListStyles = {
     listStyle: 'disc',
     paddingLeft: '20px',
-    color: '#d1d5db',
+    color: '#334155',
     fontSize: '13px',
     lineHeight: '1.6',
   };
 const sectionStyles = {
-  backgroundColor: "rgba(15, 23, 42, 0.9)",
+  backgroundColor: "#ffffff",
   borderRadius: "16px",
   padding: "18px",
-  border: "1px solid rgba(148, 163, 184, 0.26)",
+  border: "1px solid #e2e8f0",
   marginBottom: "18px",
 };
 
@@ -54,7 +53,7 @@ const titleStyles = {
 
 const subTitleStyles = {
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "#475569",
   marginBottom: "12px",
 };
 
@@ -65,15 +64,15 @@ const cardGrid = {
 };
 
 const cardStyles = {
-  backgroundColor: "rgba(2, 6, 23, 0.9)",
+  backgroundColor: "#f8fafc",
   padding: "16px",
   borderRadius: "12px",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
+  border: "1px solid #e2e8f0",
 };
 
 const cardTitle = {
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "#64748b",
 };
 
 const cardValue = {
@@ -92,7 +91,7 @@ const tableHeader = {
   textAlign: "left",
   padding: "10px",
   fontSize: "13px",
-  color: "#a7f3d0",
+  color: "#166534",
   borderBottom: "1px solid rgba(148,163,184,0.2)",
 };
 
@@ -118,22 +117,26 @@ const statusBadge = (status) => ({
   borderRadius: "999px",
   fontSize: "11px",
   fontWeight: 600,
-  color: status === "Tracked" ? "#bbf7d0" : "#fde68a",
+  color: status === "Verified" ? "#166534" : "#92400e",
   backgroundColor:
-    status === "Tracked" ? "rgba(22, 163, 74, 0.2)" : "rgba(202, 138, 4, 0.2)",
+    status === "Verified" ? "#dcfce7" : "#fef3c7",
   border:
-    status === "Tracked"
-      ? "1px solid rgba(74, 222, 128, 0.45)"
-      : "1px solid rgba(250, 204, 21, 0.35)",
+    status === "Verified"
+      ? "1px solid #86efac"
+      : "1px solid #fcd34d",
 });
 
 function Emission() {
-  const { globalEmissions, isProcessing } = useDataContext();
+  const { globalEmissions, isProcessing, utilityData } = useDataContext();
   
   const scope1 = globalEmissions.breakdown?.scope1?.value || 0;
   const scope2 = globalEmissions.breakdown?.scope2?.value || 0;
   // Default to static if 0 for visual purposes of the dashboard if needed, but we connect real data:
   const scope3 = globalEmissions.breakdown?.scope3?.value || 0;
+  const hasData = utilityData.length > 0;
+  const reductionProgress = hasData && globalEmissions.requiredCredits > 0
+    ? Math.min(100, Math.round((utilityData.length / globalEmissions.requiredCredits) * 100))
+    : 0;
 
   return (
     <div style={pageStyles}>
@@ -192,27 +195,33 @@ function Emission() {
               <tr>
                 <td style={tableRow}>Transport</td>
                 <td style={tableRow}>Fleet vehicles</td>
-                <td style={tableRow}>2,100 t</td>
+                <td style={tableRow}>{scope1} t</td>
                 <td style={tableRow}>
-                  <span style={statusBadge("Tracked")}>Tracked</span>
+                  <span style={statusBadge(hasData ? "Verified" : "Under Review")}>
+                    {hasData ? "Verified" : "No Data"}
+                  </span>
                 </td>
               </tr>
 
               <tr>
                 <td style={tableRow}>Electricity</td>
                 <td style={tableRow}>Office buildings</td>
-                <td style={tableRow}>3,400 t</td>
+                <td style={tableRow}>{scope2} t</td>
                 <td style={tableRow}>
-                  <span style={statusBadge("Tracked")}>Tracked</span>
+                  <span style={statusBadge(hasData ? "Verified" : "Under Review")}>
+                    {hasData ? "Verified" : "No Data"}
+                  </span>
                 </td>
               </tr>
 
               <tr>
                 <td style={tableRow}>Supply Chain</td>
                 <td style={tableRow}>Vendor logistics</td>
-                <td style={tableRow}>4,700 t</td>
+                <td style={tableRow}>{scope3} t</td>
                 <td style={tableRow}>
-                  <span style={statusBadge("Estimated")}>Estimated</span>
+                  <span style={statusBadge(hasData ? "Under Review" : "Under Review")}>
+                    {hasData ? "Under Review" : "No Data"}
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -231,14 +240,14 @@ function Emission() {
             style={{
               width: "100%",
               height: "10px",
-              background: "#020617",
+              background: "#e2e8f0",
               borderRadius: "999px",
               overflow: "hidden",
             }}
           >
             <div
               style={{
-                width: "58%",
+                width: `${reductionProgress}%`,
                 height: "100%",
                 background:
                   "linear-gradient(90deg,#16a34a,#22c55e,#4ade80)",
@@ -247,7 +256,7 @@ function Emission() {
           </div>
 
           <p style={{ marginTop: "8px", fontSize: "12px", color: "#4ade80" }}>
-            58% toward 2030 Net-Zero Target
+            {reductionProgress}% toward 2030 Net-Zero Target
           </p>
         </section>
         <section style={infoSectionStyles}>

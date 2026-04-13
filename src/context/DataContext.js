@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { generateCarbonReport } from '../utils/carbonLogicEngine';
+import { supabase } from '../pages/supabaseClient';
 
 const DataContext = createContext();
 
@@ -7,6 +8,55 @@ export const DataProvider = ({ children }) => {
   const [utilityData, setUtilityData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [globalEmissions, setGlobalEmissions] = useState({ totalMT: 0, requiredCredits: 0 });
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const loadUtilityData = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (!userId) {
+        setIsHydrated(true);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('user_utility_data')
+        .select('payload')
+        .eq('user_id', userId)
+        .single();
+
+      if (!error && Array.isArray(data?.payload)) {
+        setUtilityData(data.payload);
+      }
+
+      setIsHydrated(true);
+    };
+
+    loadUtilityData();
+  }, []);
+
+  useEffect(() => {
+    const persistUtilityData = async () => {
+      if (!isHydrated) return;
+
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (!userId) return;
+
+      await supabase
+        .from('user_utility_data')
+        .upsert(
+          {
+            user_id: userId,
+            payload: utilityData,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        );
+    };
+
+    persistUtilityData();
+  }, [utilityData, isHydrated]);
 
   // Recalculate global emissions whenever utilityData changes
   useEffect(() => {

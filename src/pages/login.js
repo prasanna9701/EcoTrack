@@ -9,8 +9,7 @@ const pageStyles = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background:
-    "radial-gradient(circle at top left, #0f172a 0, #020617 45%, #020617 100%)",
+  background: "#ffffff",
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
 };
@@ -18,26 +17,24 @@ const pageStyles = {
 const cardStyles = {
   width: "100%",
   maxWidth: "420px",
-  backgroundColor: "rgba(15, 23, 42, 0.9)",
+  backgroundColor: "#ffffff",
   borderRadius: "16px",
   padding: "32px 28px 28px",
-  boxShadow:
-    "0 24px 60px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(148, 163, 184, 0.1)",
-  color: "#e5e7eb",
-  backdropFilter: "blur(18px)",
+  boxShadow: "0 20px 44px rgba(15, 23, 42, 0.12)",
+  color: "#0f172a",
 };
 
 const titleStyles = {
   fontSize: "24px",
   fontWeight: 600,
   marginBottom: "10px",
-  color: "#f9fafb",
+  color: "#0f172a",
   textAlign: "center",
 };
 
 const subtitleStyles = {
   fontSize: "14px",
-  color: "#9ca3af",
+  color: "#475569",
   textAlign: "center",
 };
 
@@ -57,9 +54,9 @@ const inputStyles = {
   width: "100%",
   padding: "10px 12px",
   borderRadius: "10px",
-  border: "1px solid rgba(148, 163, 184, 0.5)",
-  backgroundColor: "rgba(15, 23, 42, 0.7)",
-  color: "#e5e7eb",
+  border: "1px solid #cbd5e1",
+  backgroundColor: "#ffffff",
+  color: "#0f172a",
   fontSize: "14px",
   outline: "none",
 };
@@ -85,7 +82,7 @@ const backButtonStyles = {
   borderRadius: "999px",
   border: "1px solid rgba(148, 163, 184, 0.4)",
   background: "transparent",
-  color: "#9ca3af",
+  color: "#475569",
   fontWeight: 500,
   cursor: "pointer",
 };
@@ -101,13 +98,13 @@ const rememberRowStyles = {
   alignItems: "center",
   gap: "8px",
   fontSize: "12px",
-  color: "#9ca3af",
+  color: "#475569",
 };
 
 const footerStyles = {
   marginTop: "18px",
   fontSize: "12px",
-  color: "#6b7280",
+  color: "#64748b",
   textAlign: "center",
 };
 

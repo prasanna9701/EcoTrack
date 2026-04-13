@@ -5,8 +5,8 @@ import { FaBolt, FaFire, FaFileInvoice, FaCloudUploadAlt } from "react-icons/fa"
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background: "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
 };
 
@@ -24,7 +24,7 @@ const titleStyles = {
 
 const subTitleStyles = {
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "#475569",
   marginBottom: "24px",
 };
 
@@ -38,11 +38,11 @@ const sectionTitleStyles = {
 };
 
 const reportCardStyles = {
-  backgroundColor: "rgba(15,23,42,0.85)",
+  backgroundColor: "#ffffff",
   borderRadius: "12px",
   padding: "16px",
-  border: "1px solid rgba(74,222,128,0.3)",
-  boxShadow: "0 8px 24px rgba(15,23,42,0.6)",
+  border: "1px solid #dcfce7",
+  boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
   display: "flex",
   flexDirection: "column",
 };
@@ -109,7 +109,7 @@ function Reports() {
           <div style={headerRowStyles}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                  <FaFileInvoice color="#4ade80" />
-                 <span style={{ fontWeight: 600, color: '#f9fafb' }}>{item.provider || 'Unknown Provider'}</span>
+                 <span style={{ fontWeight: 600, color: '#0f172a' }}>{item.provider || 'Unknown Provider'}</span>
               </div>
               <span style={{ fontSize: '11px', padding:"2px 8px", background:"rgba(22, 163, 74, 0.2)", color:"#bbf7d0", borderRadius:"12px" }}>
                   {item.isEdited ? 'Manual Entry' : 'Processed'}
@@ -118,20 +118,20 @@ function Reports() {
           
           <div style={gridStyles}>
               <div>
-                 <div style={{ color: '#9ca3af', marginBottom: '2px' }}>Billing Period</div>
-                 <div style={{ color: '#e5e7eb', fontWeight: 500 }}>{item.billingPeriod || '-'}</div>
+                 <div style={{ color: '#64748b', marginBottom: '2px' }}>Billing Period</div>
+                 <div style={{ color: '#334155', fontWeight: 500 }}>{item.billingPeriod || '-'}</div>
               </div>
               <div>
-                 <div style={{ color: '#9ca3af', marginBottom: '2px' }}>Units Used</div>
+                 <div style={{ color: '#64748b', marginBottom: '2px' }}>Units Used</div>
                  <div style={{ color: '#4ade80', fontWeight: 600 }}>{item.value} {item.unit}</div>
               </div>
               <div>
-                 <div style={{ color: '#9ca3af', marginBottom: '2px' }}>Bill Number</div>
-                 <div style={{ color: '#e5e7eb', fontFamily: 'monospace' }}>{item.billId || 'N/A'}</div>
+                 <div style={{ color: '#64748b', marginBottom: '2px' }}>Bill Number</div>
+                 <div style={{ color: '#334155', fontFamily: 'monospace' }}>{item.billId || 'N/A'}</div>
               </div>
               <div>
-                 <div style={{ color: '#9ca3af', marginBottom: '2px' }}>Account ID</div>
-                 <div style={{ color: '#e5e7eb', fontFamily: 'monospace' }}>{item.accountId || 'Unknown'}</div>
+                 <div style={{ color: '#64748b', marginBottom: '2px' }}>Account ID</div>
+                 <div style={{ color: '#334155', fontFamily: 'monospace' }}>{item.accountId || 'Unknown'}</div>
               </div>
           </div>
       </div>
@@ -155,9 +155,9 @@ function Reports() {
         </div>
 
         {utilityData.length === 0 ? (
-           <div style={{ textAlign: "center", padding: "60px", backgroundColor: "rgba(15, 23, 42, 0.4)", borderRadius: "16px", border: "1px dashed rgba(148,163,184,0.3)" }}>
+           <div style={{ textAlign: "center", padding: "60px", backgroundColor: "#f8fafc", borderRadius: "16px", border: "1px dashed #94a3b8" }}>
                <h3 style={{ color: "#34d399", marginBottom: "8px", fontSize: "18px" }}>No Reports Extracted Yet</h3>
-               <p style={{ color: "#9ca3af" }}>Upload a utility bill directly here or in the Data Tab to see it mapped.</p>
+               <p style={{ color: "#64748b" }}>Upload a utility bill directly here or in the Data Tab to see it mapped.</p>
            </div>
         ) : (
            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

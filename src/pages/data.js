@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background: "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 
@@ -22,7 +22,7 @@ const dropZoneStyles = {
   borderRadius: "16px",
   padding: "40px",
   textAlign: "center",
-  backgroundColor: "rgba(15, 23, 42, 0.4)",
+  backgroundColor: "#f8fafc",
   cursor: "pointer",
   transition: "all 0.2s ease",
   marginBottom: "24px"
@@ -43,9 +43,9 @@ const tableCellStyles = {
 };
 
 const inputStyles = {
-  background: "rgba(2, 6, 23, 0.8)",
-  border: "1px solid rgba(148, 163, 184, 0.3)",
-  color: "#fff",
+  background: "#ffffff",
+  border: "1px solid #cbd5e1",
+  color: "#0f172a",
   padding: "6px 10px",
   borderRadius: "6px",
   width: "100%",
@@ -113,9 +113,9 @@ const DataTab = () => {
     };
 
     const EmptyState = () => (
-        <div style={{ textAlign: "center", padding: "40px", backgroundColor: "rgba(15, 23, 42, 0.4)", borderRadius: "16px" }}>
+        <div style={{ textAlign: "center", padding: "40px", backgroundColor: "#f8fafc", borderRadius: "16px" }}>
             <h3 style={{ color: "#34d399", marginBottom: "8px" }}>No Data Yet</h3>
-            <p style={{ color: "#9ca3af" }}>Drag and drop a utility bill above to get started.</p>
+            <p style={{ color: "#64748b" }}>Drag and drop a utility bill above to get started.</p>
         </div>
     );
 
@@ -123,7 +123,7 @@ const DataTab = () => {
         <div style={pageStyles}>
             <main style={mainStyles}>
                 <h1 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "8px" }}>Unified Data Sync</h1>
-                <p style={{ color: "#9ca3af", fontSize: "14px", marginBottom: "24px" }}>
+                <p style={{ color: "#475569", fontSize: "14px", marginBottom: "24px" }}>
                     Upload bills or input data manually. Changes sync in real-time across your dashboards.
                 </p>
 
@@ -137,7 +137,7 @@ const DataTab = () => {
                     <input type="file" ref={fileInputRef} onChange={(e) => processFile(e.target.files[0])} className="hidden" />
                 </div>
 
-                <div style={{ backgroundColor: "rgba(15, 23, 42, 0.9)", borderRadius: "16px", padding: "20px", border: "1px solid rgba(148, 163, 184, 0.2)" }}>
+                <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e2e8f0", boxShadow: "0 6px 18px rgba(15,23,42,0.06)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                         <h2 style={{ fontSize: "18px", fontWeight: "600" }}>The Elements Table</h2>
                         <button onClick={() => addOrUpdateData({ type: 'Electricity', provider: '', billingPeriod: '', value: 0, unit: 'kWh', isEdited: true, billId: '', accountId: '' })} style={{ padding: "6px 12px", background: "#059669", color: "white", borderRadius: "8px", border: "none", cursor: "pointer" }}>+ Manual Entry</button>
@@ -181,7 +181,7 @@ const DataTab = () => {
                                                        <input placeholder="Bill ID" style={inputStyles} value={editForm.billId || ''} onChange={e => setEditForm({...editForm, billId: e.target.value})} />
                                                     </div>
                                                 ) : (
-                                                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>
+                                                    <div style={{ fontSize: '12px', color: '#64748b' }}>
                                                        <div>Acc: <span style={{ color: '#d1d5db', fontFamily: 'monospace' }}>{item.accountId || '-'}</span></div>
                                                        <div>Bill: <span style={{ color: '#d1d5db', fontFamily: 'monospace' }}>{item.billId || '-'}</span></div>
                                                     </div>

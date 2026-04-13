@@ -24,8 +24,8 @@ const Sidebar = () => {
       style={{
         width: sidebarCollapsed ? "64px" : "240px",
         transition: "width 0.3s ease",
-        backgroundColor: "rgba(15, 23, 42, 0.96)",
-        borderRight: "1px solid rgba(148, 163, 184, 0.25)",
+        backgroundColor: "#f8fafc",
+        borderRight: "1px solid #e2e8f0",
         display: "flex",
         flexDirection: "column",
         padding: "16px 12px",
@@ -57,7 +57,7 @@ const Sidebar = () => {
             transition: "opacity 0.3s, width 0.3s",
             opacity: sidebarCollapsed ? 0 : 1,
             width: sidebarCollapsed ? 0 : "auto",
-            color: "#4ade80", 
+            color: "#0f172a",
           }}
         >
           EcoTrack
@@ -70,7 +70,7 @@ const Sidebar = () => {
             marginLeft: "auto",
             border: "none",
             background: "transparent",
-            color: "#9ca3af",
+            color: "#64748b",
             cursor: "pointer",
             fontSize: "18px",
           }}
@@ -94,8 +94,8 @@ const Sidebar = () => {
                   padding: "8px 12px",
                   borderRadius: "10px",
                   textDecoration: "none",
-                  color: active ? "#bbf7d0" : "#d1d5db",
-                  backgroundColor: active ? "rgba(34,197,94,0.18)" : "transparent",
+                  color: active ? "#166534" : "#334155",
+                  backgroundColor: active ? "#dcfce7" : "transparent",
                   transition: "background-color 0.2s, color 0.2s",
                 }}
                 title={sidebarCollapsed ? item.name : ""}
@@ -108,54 +108,6 @@ const Sidebar = () => {
         })}
       </ul>
 
-      {/* Sustainability Score at bottom */}
-      <div style={{ marginTop: "auto" }}>
-        {!sidebarCollapsed && (
-          <div style={{ fontSize: "11px", color: "#9ca3af", marginBottom: "6px" }}>
-            Sustainability Score
-          </div>
-        )}
-        <div
-          style={{
-            borderRadius: "12px",
-            padding: sidebarCollapsed ? "8px" : "10px 12px",
-            background: "radial-gradient(circle at top, rgba(22, 163, 74, 0.18), rgba(15, 23, 42, 0.95))",
-            border: "1px solid rgba(34, 197, 94, 0.4)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ fontSize: "12px", color: "#bbf7d0", fontWeight: 500 }}>78 / 100</span>
-            {!sidebarCollapsed && (
-              <span style={{ fontSize: "10px", color: "#6ee7b7" }}>+3 vs last month</span>
-            )}
-          </div>
-          <div
-            style={{
-              marginTop: "6px",
-              width: "100%",
-              height: "5px",
-              borderRadius: "999px",
-              backgroundColor: "rgba(15, 23, 42, 0.9)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: "78%",
-                height: "100%",
-                borderRadius: "999px",
-                background: "linear-gradient(90deg, #16a34a, #22c55e, #4ade80)",
-              }}
-            />
-          </div>
-        </div>
-      </div>
     </aside>
   );
 };

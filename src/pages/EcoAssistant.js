@@ -119,11 +119,11 @@ const EcoAssistant = () => {
   // Mini-Form Card Component
   const MiniCard = ({ data, messageId }) => {
       return (
-          <div className="mt-2 p-3 bg-slate-800 rounded-xl border border-green-500/50 shadow-inner">
-              <div className="flex justify-between items-center text-xs mb-2 border-b border-slate-700 pb-2">
+          <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-green-300 shadow-inner">
+              <div className="flex justify-between items-center text-xs mb-2 border-b border-slate-200 pb-2">
                  <span className="font-semibold text-green-400">Extracted Values</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
                   <div><span className="text-slate-500 block">Type:</span> {data.type}</div>
                   <div><span className="text-slate-500 block">Date:</span> {data.billingPeriod}</div>
                   <div><span className="text-slate-500 block">Usage:</span> {data.value} {data.unit}</div>
@@ -147,16 +147,16 @@ const EcoAssistant = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="w-[400px] h-[580px] bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700 overflow-hidden flex flex-col mb-4"
+            className="w-[400px] h-[580px] bg-white backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col mb-4"
           >
-            <div className="bg-slate-800/80 p-4 border-b border-slate-700 flex justify-between items-center text-slate-100">
+            <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center text-slate-800">
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-green-400" />
                 <h3 className="font-semibold text-lg tracking-wide">Eco Assistant</h3>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-200 transition-colors bg-slate-700/50 hover:bg-slate-700 p-1 rounded-full"
+                className="text-slate-500 hover:text-slate-700 transition-colors bg-slate-100 hover:bg-slate-200 p-1 rounded-full"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -175,7 +175,7 @@ const EcoAssistant = () => {
                         className={`rounded-2xl p-3 shadow-md border ${
                           msg.sender === 'user'
                             ? 'bg-gradient-to-r from-green-600 to-emerald-500 text-white border-green-500 rounded-br-none'
-                            : 'bg-slate-800/90 text-slate-200 border-slate-600 rounded-bl-none'
+                            : 'bg-slate-100 text-slate-700 border-slate-200 rounded-bl-none'
                         }`}
                       >
                         {msg.text}
@@ -191,7 +191,7 @@ const EcoAssistant = () => {
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-slate-800/90 text-slate-400 border border-slate-600 p-3 rounded-2xl rounded-bl-none flex gap-1">
+                  <div className="bg-slate-100 text-slate-500 border border-slate-200 p-3 rounded-2xl rounded-bl-none flex gap-1">
                     <span className="animate-bounce">.</span>
                     <span className="animate-bounce delay-100">.</span>
                     <span className="animate-bounce delay-200">.</span>
@@ -201,11 +201,11 @@ const EcoAssistant = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 border-t border-slate-700 bg-slate-800/50 flex gap-2 items-center">
+            <div className="p-3 border-t border-slate-200 bg-slate-50 flex gap-2 items-center">
               <input type="file" accept=".pdf,image/*" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="text-slate-400 hover:text-green-400 p-2 rounded-xl transition-colors bg-slate-800 border border-slate-700"
+                className="text-slate-500 hover:text-green-600 p-2 rounded-xl transition-colors bg-white border border-slate-300"
                 title="Upload Bill"
               >
                 <Paperclip className="w-5 h-5" />
@@ -217,7 +217,7 @@ const EcoAssistant = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask about emissions or upload..."
-                className="flex-1 bg-slate-900 border border-slate-600 text-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="flex-1 bg-white border border-slate-300 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               />
               <button
                 onClick={handleSend}

@@ -5,9 +5,8 @@ import { useDataContext } from "../context/DataContext";
 const pageStyles = {
   minHeight: "100vh",
   display: "flex",
-  background:
-    "radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%)",
-  color: "#e5e7eb",
+  background: "#ffffff",
+  color: "#0f172a",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
 };
 
@@ -25,31 +24,31 @@ const titleStyles = {
 
 const subTitleStyles = {
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "#475569",
   marginBottom: "16px",
 };
 
 const sectionStyles = {
-  backgroundColor: "rgba(15, 23, 42, 0.9)",
+  backgroundColor: "#ffffff",
   borderRadius: "16px",
   padding: "18px",
-  border: "1px solid rgba(148, 163, 184, 0.26)",
+  border: "1px solid #e2e8f0",
   marginBottom: "18px",
 };
 
 const metricCardStyles = {
-  backgroundColor: "rgba(15, 23, 42, 0.85)",
+  backgroundColor: "#f8fafc",
   borderRadius: "12px",
   padding: "12px 16px",
-  border: "1px solid rgba(74, 222, 128, 0.3)",
-  boxShadow: "0 8px 24px rgba(15,23,42,0.6)",
+  border: "1px solid #dcfce7",
+  boxShadow: "0 4px 14px rgba(15,23,42,0.08)",
 };
 
 const progressBarOuterStyles = {
   width: "100%",
   height: "8px",
   borderRadius: "999px",
-  backgroundColor: "#0f172a",
+  backgroundColor: "#e2e8f0",
   overflow: "hidden",
   marginTop: "8px",
 };
@@ -71,6 +70,18 @@ function Energy() {
      });
      return total;
   }, [utilityData]);
+  const gasUsage = useMemo(
+    () => utilityData.filter((item) => item.type === "Gas").reduce((sum, item) => sum + (item.value || 0), 0),
+    [utilityData]
+  );
+  const uploadCount = utilityData.length;
+  const hasData = uploadCount > 0;
+  const renewableShare = hasData ? Math.min(100, Math.round((uploadCount / (uploadCount + 2)) * 100)) : 0;
+  const efficiencyImprovement = hasData ? Math.min(100, uploadCount * 2) : 0;
+  const solarMix = hasData ? Math.round(renewableShare * 0.45) : 0;
+  const windMix = hasData ? Math.round(renewableShare * 0.35) : 0;
+  const hydroMix = hasData ? Math.round(renewableShare * 0.2) : 0;
+  const gridMix = Math.max(0, 100 - (solarMix + windMix + hydroMix));
 
   return (
     <div style={pageStyles}>
@@ -93,19 +104,19 @@ function Energy() {
           >
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Total Consumption</p>
-              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#facc15", fontSize: "18px" }}>{totalConsumption || 1240} kWh</h3>}
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#facc15", fontSize: "18px" }}>{totalConsumption} kWh</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>CO₂ Emissions</p>
-              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#f87171", fontSize: "18px" }}>{(globalEmissions.breakdown?.scope2?.value || 320)} t</h3>}
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#f87171", fontSize: "18px" }}>{(globalEmissions.breakdown?.scope2?.value || 0)} t</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Renewable Share</p>
-              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#4ade80", fontSize: "18px" }}>62%</h3>}
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#4ade80", fontSize: "18px" }}>{renewableShare}%</h3>}
             </div>
             <div style={metricCardStyles}>
               <p style={subTitleStyles}>Efficiency Improvement</p>
-              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#22c55e", fontSize: "18px" }}>+14%</h3>}
+              {isProcessing ? <div style={{width:'80px', height:'21px', background:'rgba(255,255,255,0.1)', borderRadius:'6px', marginTop:'4px'}} className="animate-pulse"/> : <h3 style={{ color: "#22c55e", fontSize: "18px" }}>{efficiencyImprovement}%</h3>}
             </div>
           </div>
         </section>
@@ -116,27 +127,27 @@ function Energy() {
           <p style={subTitleStyles}>Current proportion of energy sources</p>
           <ul style={{ listStyle: "none", padding: 0, marginTop: "8px" }}>
             <li>
-              Solar: <span style={{ color: "#facc15" }}>28%</span>
+              Solar: <span style={{ color: "#facc15" }}>{solarMix}%</span>
               <div style={progressBarOuterStyles}>
-                <div style={progressBarInnerStyles(28, "#facc15")} />
+                <div style={progressBarInnerStyles(solarMix, "#facc15")} />
               </div>
             </li>
             <li>
-              Wind: <span style={{ color: "#60a5fa" }}>22%</span>
+              Wind: <span style={{ color: "#60a5fa" }}>{windMix}%</span>
               <div style={progressBarOuterStyles}>
-                <div style={progressBarInnerStyles(22, "#60a5fa")} />
+                <div style={progressBarInnerStyles(windMix, "#60a5fa")} />
               </div>
             </li>
             <li>
-              Hydro: <span style={{ color: "#34d399" }}>12%</span>
+              Hydro: <span style={{ color: "#34d399" }}>{hydroMix}%</span>
               <div style={progressBarOuterStyles}>
-                <div style={progressBarInnerStyles(12, "#34d399")} />
+                <div style={progressBarInnerStyles(hydroMix, "#34d399")} />
               </div>
             </li>
             <li>
-              Grid: <span style={{ color: "#a1a1aa" }}>38%</span>
+              Grid: <span style={{ color: "#a1a1aa" }}>{gridMix}%</span>
               <div style={progressBarOuterStyles}>
-                <div style={progressBarInnerStyles(38, "#a1a1aa")} />
+                <div style={progressBarInnerStyles(gridMix, "#a1a1aa")} />
               </div>
             </li>
           </ul>
@@ -147,16 +158,16 @@ function Energy() {
           <h2 style={titleStyles}>Ongoing Initiatives</h2>
           <ul style={{ listStyle: "none", padding: 0, marginTop: "12px" }}>
             <li>
-              Solar panel upgrade: <span style={{ color: "#4ade80" }}>75% complete</span>
+              Solar panel upgrade: <span style={{ color: "#4ade80" }}>{Math.round((uploadCount || 0) * 8)}% complete</span>
             </li>
             <li>
-              Smart meter deployment: <span style={{ color: "#22c55e" }}>40% complete</span>
+              Smart meter deployment: <span style={{ color: "#22c55e" }}>{Math.round((uploadCount || 0) * 5)}% complete</span>
             </li>
             <li>
-              HVAC efficiency project: <span style={{ color: "#facc15" }}>Planning</span>
+              HVAC efficiency project: <span style={{ color: "#facc15" }}>{hasData ? "In progress" : "Not started"}</span>
             </li>
             <li>
-              LED lighting retrofit: <span style={{ color: "#60a5fa" }}>50% complete</span>
+              LED lighting retrofit: <span style={{ color: "#60a5fa" }}>{Math.round((uploadCount || 0) * 6)}% complete</span>
             </li>
           </ul>
         </section>
@@ -165,10 +176,10 @@ function Energy() {
         <section style={sectionStyles}>
           <h2 style={titleStyles}>Trends & Comparisons</h2>
           <p style={subTitleStyles}>
-            Renewable usage has increased <strong style={{ color: "#4ade80" }}>+5%</strong> compared to last month.
+            Renewable usage has changed <strong style={{ color: "#4ade80" }}>{renewableShare}%</strong> based on uploaded records.
           </p>
           <p style={subTitleStyles}>
-            Energy consumption decreased <strong style={{ color: "#f87171" }}>-3%</strong> versus last quarter.
+            Total gas usage recorded: <strong style={{ color: "#f87171" }}>{gasUsage}</strong>.
           </p>
         </section>
       </main>
