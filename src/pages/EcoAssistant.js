@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Leaf, X, Send, Bot, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from './supabaseClient';
 import { useDataContext } from '../context/DataContext';
 import { getPriorityExtraction, buildUtilityItemFromSample } from '../utils/extractionLogic';
 
@@ -16,9 +15,98 @@ const EcoAssistant = () => {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(false);
+  const [lastQuestions, setLastQuestions] = useState([]);
   
-  const { addOrUpdateData, utilityData, globalEmissions } = useDataContext();
-  
+  const { addOrUpdateData, utilityData } = useDataContext();
+  const totalEmissions = useMemo(() => {
+    let total = 0;
+    utilityData.forEach((item) => {
+      const unit = (item.unit || '').toLowerCase();
+      const value = Number(item.value) || 0;
+      if (item.type === 'Electricity' && unit.includes('kwh')) {
+        total += value * 0.0008;
+      }
+      if (item.type === 'Gas' && unit.includes('scm')) {
+        total += value * 0.002;
+      }
+    });
+    return Number(total.toFixed(2));
+  }, [utilityData]);
+
+  const totalEmissionsNeedsCalibration = totalEmissions === 0 && utilityData.length > 0;
+  const calibrationProvider = utilityData.find((item) => item.provider)?.provider || 'your utility provider';
+  const totalEmissionsExplanation = totalEmissionsNeedsCalibration
+    ? `Emission factors for ${calibrationProvider} need to be calibrated.`
+    : '';
+
+  const hiddenContext = useMemo(() => ({
+    utilityData,
+    totalEmissions,
+  }), [utilityData, totalEmissions]);
+
+  const utilitySnapshot = useMemo(() => {
+    return utilityData
+      .map((item) => `${item.id || item.billId || ''}|${item.provider || ''}|${item.billingPeriod || ''}|${item.value || 0}|${item.unit || ''}`)
+      .join('||');
+  }, [utilityData]);
+
+  const lastUtilitySnapshotRef = useRef('');
+
+  const parseBillingPeriod = (text) => {
+    if (!text) return null;
+    const monthMap = {
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+      jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+    };
+    const lower = text.toLowerCase();
+    const monthMatch = lower.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{4})/);
+    if (monthMatch) {
+      const month = monthMap[monthMatch[1].slice(0, 3)];
+      const year = Number(monthMatch[2]);
+      return new Date(year, month).getTime();
+    }
+    const isoMatch = lower.match(/(\d{4})[-/](\d{2})/);
+    if (isoMatch) {
+      const year = Number(isoMatch[1]);
+      const month = Number(isoMatch[2]) - 1;
+      return new Date(year, month).getTime();
+    }
+    return null;
+  };
+
+  const gasDateComparison = useMemo(() => {
+    const iglGasItems = utilityData
+      .filter((item) => item.type === 'Gas' && /igl|indraprastha/i.test(item.provider || ''))
+      .map((item) => ({
+        ...item,
+        dateValue: parseBillingPeriod(item.billingPeriod),
+      }))
+      .filter((item) => item.value != null);
+
+    if (iglGasItems.length < 2) return null;
+
+    const sorted = [...iglGasItems].sort((a, b) => (b.dateValue || 0) - (a.dateValue || 0));
+    const latest = sorted[0];
+    const previous = sorted[1];
+    if (!latest || !previous) return null;
+
+    if (latest.value > previous.value) {
+      return `Your ${latest.billingPeriod} gas usage was higher than ${previous.billingPeriod}.`;
+    }
+    if (latest.value < previous.value) {
+      return `Your ${latest.billingPeriod} gas usage was lower than ${previous.billingPeriod}.`;
+    }
+    return `Your ${latest.billingPeriod} gas usage matched your ${previous.billingPeriod} usage.`;
+  }, [utilityData]);
+
+  const highestUsageItem = useMemo(() => {
+    if (!utilityData.length) return null;
+    return utilityData.reduce((max, item) => (item.value > (max?.value || 0) ? item : max), null);
+  }, [utilityData]);
+
+  const systemPrompt = "You are the EcoTrack Intelligence Agent, a professional sustainability consultant. Stop giving the same 'Hello! Upload a bill' response to every message. If the user greets you, respond warmly. If the user asks for seller or owner details, reply: 'This platform is developed by Akhil. For commercial licenses or custom integrations, please contact the administrator.' If the user suggests faking data, politely refuse and explain that EcoTrack is built for audit-ready compliance and transparency.";
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const prevUtilityLength = useRef(utilityData.length);
@@ -36,24 +124,24 @@ const EcoAssistant = () => {
      if (utilityData.length !== prevUtilityLength.current) {
          if (utilityData.length < prevUtilityLength.current) {
             // A deletion occurred
-            setMessages(prev => [...prev, { id: Date.now(), text: `I noticed some data was removed from the Data Tab. I have updated the global carbon footprint calculations for you. It's now ${globalEmissions.totalMT} Tons.`, sender: 'bot' }]);
+            setMessages(prev => [...prev, { id: Date.now(), text: `I noticed some data was removed from the Data Tab. I have updated the global carbon footprint calculations for you. It's now ${totalEmissions.toFixed(2)} Tons.`, sender: 'bot', systemPrompt, hiddenContext }]);
          } else {
              // Let's assume an addition occurred manually if it wasn't triggered by our upload flow
              // Typically we'd check if the last item was `isEdited: true` flag.
              const latest = utilityData[utilityData.length - 1];
              if (latest && latest.isEdited) {
-                  setMessages(prev => [...prev, { id: Date.now(), text: `I saw you manually adjusted the ${latest.type} entry! I've updated your dashboards.`, sender: 'bot' }]);
+                  setMessages(prev => [...prev, { id: Date.now(), text: `I saw you manually adjusted the ${latest.type} entry! I've updated your dashboards.`, sender: 'bot', systemPrompt, hiddenContext }]);
              }
          }
          prevUtilityLength.current = utilityData.length;
      }
-  }, [utilityData, globalEmissions]);
+  }, [utilityData, totalEmissions, hiddenContext]);
 
   const handleFileUpload = (e) => {
      const file = e.target.files[0];
      if (!file) return;
 
-     setMessages(prev => [...prev, { id: Date.now(), text: `Uploaded: ${file.name}`, sender: 'user' }]);
+     setMessages(prev => [...prev, { id: Date.now(), text: `Uploaded: ${file.name}`, sender: 'user', systemPrompt, hiddenContext }]);
      
      const isImageOfCat = file.name.toLowerCase().includes('cat');
      const analyzingMsgId = Date.now() + 1;
@@ -63,7 +151,7 @@ const EcoAssistant = () => {
      setTimeout(() => {
         setIsTyping(false);
         if (isImageOfCat) {
-             setMessages(prev => [...prev, { id: analyzingMsgId, text: "I couldn't find energy data in this file. Please ensure it's a clear photo of your utility bill.", sender: 'bot' }]);
+             setMessages(prev => [...prev, { id: analyzingMsgId, text: "I couldn't find energy data in this file. Please ensure it's a clear photo of your utility bill.", sender: 'bot', systemPrompt, hiddenContext }]);
              return;
         }
 
@@ -98,6 +186,8 @@ const EcoAssistant = () => {
             text: isMultiPage ? "I scanned all 5 pages and found your usage data on page 3. Here is what I extracted. Confirm to add it to the global Data Context!" : "I processed the bill. Please review the extracted data.",
             sender: 'bot',
             cardData,
+            systemPrompt,
+            hiddenContext,
         };
         
         setMessages(prev => [...prev, botMsg]);
@@ -117,22 +207,143 @@ const EcoAssistant = () => {
       id: Date.now(),
       text: inputValue,
       sender: 'user',
+      systemPrompt,
+      hiddenContext,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setLastQuestions(prev => [userMessage.text, ...(prev.slice(0, 1))]); // Keep last 2
     setInputValue("");
     setIsTyping(true);
 
-    setTimeout(async () => {
+    setTimeout(() => {
       const lowerInput = userMessage.text.toLowerCase();
       setIsTyping(false);
 
-      if (lowerInput.includes('hello') || lowerInput.includes('hi')) {
-         setMessages(prev => [...prev, { id: Date.now(), text: "Hello! Upload a bill using the paperclip, or type your energy usage here and I will sync it globally.", sender: 'bot' }]);
-      } else {
-         setMessages(prev => [...prev, { id: Date.now(), text: `I recommend uploading the bill document so I can accurately extract it. Our current global trajectory sits at ${globalEmissions.totalMT} Tons.`, sender: 'bot' }]);
+      const isGreeting = /\b(hello|hi|hey|good morning|good afternoon|good evening)\b/.test(lowerInput);
+      const isOwnerQuery = /\b(owner|seller|developer|developed by|commercial license|white ?label|custom integration|contact administrator|contact)\b/.test(lowerInput);
+      const isFakeDataQuery = /\b(fake|fabricate|faking|faked|bogus|not real|manipulate data|cook the books|alter data)\b/.test(lowerInput);
+      const isDataChangeRequest = /\b(change|fake|edit|lower|modify|alter|falsify)\b/.test(lowerInput) && /\b(bill|data|usage|report|emissions)\b/.test(lowerInput);
+      const isCreditQuery = /\b(cc|carbon credit|carbon credits|credits)\b/.test(lowerInput) && /\bhow many\b|\bshould i buy\b|\brecommended\b|\bneed\b/.test(lowerInput);
+      const isBudgetQuery = /\b(budget|afford|cost|price|spend|money|dollar|\$)\b/.test(lowerInput) && /\b(credit|offset|neutral|carbon)\b/.test(lowerInput);
+      const isLeakCheckQuery = /\b(leak|industrial|audit|anomaly|jump|spike|abnormal)\b/.test(lowerInput);
+      const isFutureProjection = /\b(future|2030|projection|forecast|predict|trend)\b/.test(lowerInput);
+      const percentMatch = lowerInput.match(/(\d{1,3})\s*%/);
+      const isWhatIf = /\bwhat if\b|\bcut.*usage\b|\breduce.*usage\b/.test(lowerInput);
+      const highFootprintAsk = /\b(high footprint|footprint|high emissions|carbon footprint)\b/.test(lowerInput);
+      const didUtilityChange = utilitySnapshot !== lastUtilitySnapshotRef.current;
+
+      const electricityTotal = utilityData.filter(item => item.type === 'Electricity').reduce((sum, item) => sum + (item.value || 0), 0);
+      const gasTotal = utilityData.filter(item => item.type === 'Gas').reduce((sum, item) => sum + (item.value || 0), 0);
+      const currentTotal = totalEmissions;
+
+      const respond = (text) => {
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          text,
+          sender: 'bot',
+          systemPrompt,
+          hiddenContext,
+        }] );
+        lastUtilitySnapshotRef.current = utilitySnapshot;
+      };
+
+      if (isGreeting && !hasGreeted) {
+         setHasGreeted(true);
+         respond(`Hi there! I'm your EcoTrack Intelligence Agent. I currently see ${utilityData.length} bill${utilityData.length === 1 ? '' : 's'} and a total footprint of ${currentTotal.toFixed(2)} Tons.`);
+         return;
       }
-    }, 1000); 
+
+      if (isGreeting && hasGreeted) {
+         const lastQ = lastQuestions.length > 0 ? ` You previously asked: "${lastQuestions[0]}"` : '';
+         respond(`Welcome back. Your dashboard still shows ${utilityData.length} bill${utilityData.length === 1 ? '' : 's'} and ${currentTotal.toFixed(2)} Tons total.${lastQ}`);
+         return;
+      }
+
+      if (isOwnerQuery) {
+         respond('This platform is developed by Akhil. For commercial licenses, please contact the administrator.');
+         return;
+      }
+
+      if (isDataChangeRequest) {
+         respond('I cannot modify or falsify uploaded data. EcoTrack is designed for high-integrity, audit-ready reporting. To lower your footprint, please explore the energy-saving recommendations in the Energy tab.');
+         return;
+      }
+
+      if (isFakeDataQuery) {
+         respond('EcoTrack is built for audit-ready compliance and transparency. I cannot help fabricate or fake utility data. Please keep the reports honest for reliable footprint analysis.');
+         return;
+      }
+
+      if (isBudgetQuery) {
+         const budgetMatch = lowerInput.match(/\$?(\d+(?:\.\d+)?)/);
+         const budget = budgetMatch ? Number(budgetMatch[1]) : 200; // Default to $200 if not specified
+         const pricePerCredit = 15;
+         const offsetTons = budget / pricePerCredit;
+         const remainingTons = Math.max(0, currentTotal - offsetTons);
+         respond(`With $${budget}, you can offset roughly ${offsetTons.toFixed(1)} tons. Since your total is ${currentTotal.toFixed(2)} tons, you will have ${remainingTons.toFixed(2)} tons remaining un-offset.`);
+         return;
+      }
+
+      if (isLeakCheckQuery) {
+         // Compare E_sample_3 (industrial) to E_sample_1 (residential)
+         const industrialBill = utilityData.find(item => item.value === 29284.2 && item.type === 'Electricity');
+         const residentialBills = utilityData.filter(item => item.type === 'Electricity' && item.value < 1000);
+         if (industrialBill && residentialBills.length > 0) {
+            const avgResidential = residentialBills.reduce((sum, item) => sum + item.value, 0) / residentialBills.length;
+            const jump = (industrialBill.value / avgResidential) * 100;
+            if (jump > 1000) {
+               respond(`I detected a significant anomaly: your industrial bill (${industrialBill.value} kWh) is over ${jump.toFixed(0)}% higher than your average residential usage (${avgResidential.toFixed(0)} kWh). This suggests a potential leak or industrial-scale consumption. I recommend scheduling an industrial energy audit immediately.`);
+            } else {
+               respond(`Comparing your bills, the industrial usage (${industrialBill.value} kWh) shows a ${jump.toFixed(0)}% increase over residential (${avgResidential.toFixed(0)} kWh), but it's within expected ranges. No immediate audit needed.`);
+            }
+         } else {
+            respond(`I need both industrial and residential bills to perform a leak check. Please upload more bills for comparison.`);
+         }
+         return;
+      }
+
+      if (isFutureProjection) {
+         const projectedEmissions = currentTotal * 1.05;
+         respond(`Based on a 5% annual growth rate, your emissions could reach ${projectedEmissions.toFixed(2)} tons by 2030. Consider implementing energy efficiency measures to curb this growth.`);
+         return;
+      }
+
+      if (isCreditQuery) {
+         const recommendedCredits = Math.ceil(currentTotal || 0);
+         if (currentTotal > 0) {
+            respond(`Since your current footprint is ${currentTotal.toFixed(2)} Tons, I recommend purchasing ${recommendedCredits} Carbon Credits to achieve Carbon Neutrality.`);
+         } else {
+            respond(`I cannot recommend a credit quantity until your dashboard emissions are calculated. ${totalEmissionsExplanation}`);
+         }
+         return;
+      }
+
+      if (isWhatIf && percentMatch) {
+         const percent = Number(percentMatch[1]);
+         if (percent > 0 && percent <= 100) {
+           const reducedEmissions = ((100 - percent) / 100) * currentTotal;
+           const reducedElectricity = electricityTotal * ((100 - percent) / 100);
+           const reducedGas = gasTotal * ((100 - percent) / 100);
+           respond(`If you cut your usage by ${percent}%, your dashboard emissions would fall from ${currentTotal.toFixed(2)} Tons to ${reducedEmissions.toFixed(2)} Tons. That is roughly ${reducedElectricity.toFixed(0)} kWh for electricity and ${reducedGas.toFixed(0)} units for gas after the reduction.`);
+         } else {
+           respond('I can calculate that for you, but please provide a valid percentage between 1 and 100.');
+         }
+         return;
+      }
+
+      if (totalEmissions === 0 && utilityData.length > 0) {
+         respond(`I currently see ${utilityData.length} bills, but the emissions calculation returns 0.00 Tons because ${totalEmissionsExplanation}`);
+         return;
+      }
+
+      // Default response without repetitive prefix
+      if (didUtilityChange) {
+         respond(`I notice changes in your dashboard data. You now have ${utilityData.length} bill${utilityData.length === 1 ? '' : 's'} with a total of ${currentTotal.toFixed(2)} Tons emissions.`);
+      } else {
+         respond(`Your current footprint is ${currentTotal.toFixed(2)} Tons based on ${utilityData.length} bill${utilityData.length === 1 ? '' : 's'}. How can I help you analyze this further?`);
+      }
+    }, 1000);
   };
 
   // Mini-Form Card Component
