@@ -3,6 +3,7 @@ import { Leaf, X, Send, Bot, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { useDataContext } from '../context/DataContext';
+import { getPriorityExtraction, buildUtilityItemFromSample } from '../utils/extractionLogic';
 
 const EcoAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -67,18 +68,36 @@ const EcoAssistant = () => {
         }
 
         const isMultiPage = file.name.toLowerCase().includes('annual');
+        const sample = getPriorityExtraction(file.name);
+        let cardData;
+        if (sample) {
+            const item = buildUtilityItemFromSample(sample);
+            cardData = {
+                type: item.type,
+                provider: item.provider,
+                billingPeriod: item.billingPeriod,
+                value: item.value,
+                unit: item.unit,
+                billId: item.billId,
+                accountId: item.accountId,
+                sourceFileName: file.name,
+            };
+        } else {
+            cardData = {
+                type: file.name.toLowerCase().includes('gas') ? 'Gas' : 'Electricity',
+                provider: 'AI-Extracted-Provider',
+                billingPeriod: 'Apr 2026',
+                value: 450,
+                unit: file.name.toLowerCase().includes('gas') ? 'Therms' : 'kWh',
+                sourceFileName: file.name,
+            };
+        }
         
         const botMsg = {
             id: analyzingMsgId,
             text: isMultiPage ? "I scanned all 5 pages and found your usage data on page 3. Here is what I extracted. Confirm to add it to the global Data Context!" : "I processed the bill. Please review the extracted data.",
             sender: 'bot',
-            cardData: {
-                type: file.name.toLowerCase().includes('gas') ? 'Gas' : 'Electricity',
-                provider: 'AI-Extracted-Provider',
-                billingPeriod: 'Apr 2026',
-                value: 450,
-                unit: file.name.toLowerCase().includes('gas') ? 'Therms' : 'kWh'
-            }
+            cardData,
         };
         
         setMessages(prev => [...prev, botMsg]);

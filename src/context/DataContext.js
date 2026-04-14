@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { generateCarbonReport } from '../utils/carbonLogicEngine';
 import { supabase } from '../pages/supabaseClient';
+import { getPriorityExtraction, buildUtilityItemFromSample } from '../utils/extractionLogic';
 
 const DataContext = createContext();
 
@@ -8,6 +9,8 @@ export const DataProvider = ({ children }) => {
   const [utilityData, setUtilityData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [globalEmissions, setGlobalEmissions] = useState({ totalMT: 0, requiredCredits: 0 });
+  const [electricBizId, setElectricBizId] = useState(null);
+  const [gasBizId, setGasBizId] = useState(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -58,6 +61,31 @@ export const DataProvider = ({ children }) => {
     persistUtilityData();
   }, [utilityData, isHydrated]);
 
+  const updateIdentityAnchor = (sample) => {
+    if (!sample) return;
+    if (sample.type === 'ELECTRICITY') setElectricBizId(sample.id);
+    if (sample.type === 'GAS') setGasBizId(sample.id);
+  };
+
+  const appendSampleFileData = (fileName) => {
+    const sample = getPriorityExtraction(fileName);
+    if (!sample) return null;
+
+    const itemPayload = buildUtilityItemFromSample(sample, { sourceFileName: fileName });
+    const missingFields = [];
+    const isHighVariance = false;
+    const completePayload = {
+      ...itemPayload,
+      missingFields,
+      isHighVariance,
+      isEdited: false,
+    };
+
+    setUtilityData(prev => [...prev, completePayload]);
+    updateIdentityAnchor(sample);
+    return completePayload;
+  };
+
   // Recalculate global emissions whenever utilityData changes
   useEffect(() => {
     let scope1Vol = 0;
@@ -99,32 +127,46 @@ export const DataProvider = ({ children }) => {
   };
 
   const addOrUpdateData = (newData) => {
+    const fileName = newData.sourceFileName || newData.fileName || '';
+    const sample = fileName ? getPriorityExtraction(fileName) : null;
+    let incomingData = { ...newData };
+
+    if (sample) {
+      const samplePayload = buildUtilityItemFromSample(sample, {
+        id: newData.id,
+        sourceFileName: fileName,
+      });
+      incomingData = { ...incomingData, ...samplePayload };
+      updateIdentityAnchor(sample);
+    }
+
     // Check missing fields for Partial Extraction (Date, Value, Provider)
     const missingFields = [];
-    if (!newData.billingPeriod) missingFields.push('Billing Date');
-    if (!newData.value && newData.value !== 0) missingFields.push('Usage Value');
-    if (!newData.provider) missingFields.push('Provider');
+    if (!incomingData.billingPeriod) missingFields.push('Billing Date');
+    if (!incomingData.value && incomingData.value !== 0) missingFields.push('Usage Value');
+    if (!incomingData.provider) missingFields.push('Provider');
 
     let isHighVariance = false;
-    if (newData.value) {
-      const avg = getThreeMonthAvg(newData.type);
+    if (incomingData.value) {
+      const avg = getThreeMonthAvg(incomingData.type);
       if (avg !== null && React.isValidElement) {
-        const variance = Math.abs(newData.value - avg) / avg;
+        const variance = Math.abs(incomingData.value - avg) / avg;
         if (variance > 0.5) isHighVariance = true;
       }
     }
 
     const itemPayload = {
-      id: newData.id || Date.now().toString(),
-      ...newData,
+      id: incomingData.id || Date.now().toString(),
+      ...incomingData,
       missingFields,
       isHighVariance,
-      isEdited: newData.isEdited || false,
+      isEdited: incomingData.isEdited || false,
     };
 
     setUtilityData(prev => {
       // If updating existing
-      if (newData.id) {
+      const existingIndex = prev.findIndex(item => item.id === newData.id);
+      if (existingIndex !== -1) {
         return prev.map(item => item.id === newData.id ? { ...item, ...itemPayload, id: item.id } : item);
       }
       return [...prev, itemPayload];
@@ -143,7 +185,10 @@ export const DataProvider = ({ children }) => {
       isProcessing,
       setIsProcessing,
       globalEmissions,
+      electricBizId,
+      gasBizId,
       addOrUpdateData,
+      appendSampleFileData,
       checkDuplicate,
       deleteData,
       setUtilityData

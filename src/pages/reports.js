@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useDataContext } from "../context/DataContext";
 import { FaBolt, FaFire, FaFileInvoice, FaCloudUploadAlt } from "react-icons/fa";
+import { getPriorityExtraction, buildUtilityItemFromSample } from "../utils/extractionLogic";
 
 const pageStyles = {
   minHeight: "100vh",
@@ -89,18 +90,26 @@ function Reports() {
   const processFile = (file) => {
       setIsProcessing(true);
       setTimeout(() => {
-          const isElectric = file.name.toLowerCase().includes('electric');
-          
-          addOrUpdateData({
-              type: isElectric ? 'Electricity' : 'Gas',
-              provider: isElectric ? 'TSSPDCL' : 'LocalGasProvider',
-              billingPeriod: 'Apr 2026',
-              value: isElectric ? 294 : 12,
-              unit: isElectric ? 'kWh' : 'Therms',
-              billId: 'INV-' + Math.floor(Math.random() * 90000 + 10000),
-              accountId: 'ACC-8821B'
-          });
+          const sample = getPriorityExtraction(file.name);
+          if (sample) {
+              const item = buildUtilityItemFromSample(sample, { sourceFileName: file.name });
+              addOrUpdateData(item);
+          } else {
+              // Fallback for non-sample files
+              const isElectric = file.name.toLowerCase().includes('electric');
+              addOrUpdateData({
+                  type: isElectric ? 'Electricity' : 'Gas',
+                  provider: isElectric ? 'TSSPDCL' : 'LocalGasProvider',
+                  billingPeriod: 'Apr 2026',
+                  value: isElectric ? 294 : 12,
+                  unit: isElectric ? 'kWh' : 'Therms',
+                  billId: 'INV-' + Math.floor(Math.random() * 90000 + 10000),
+                  accountId: 'ACC-8821B',
+                  sourceFileName: file.name,
+              });
+          }
           setIsProcessing(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
       }, 1500);
   };
 
