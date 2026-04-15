@@ -79,6 +79,7 @@ const providers = [
 const Purchase = () => {
   const { utilityData } = useDataContext();
   const [selectedProvider, setSelectedProvider] = useState(providers[0]);
+  const [purchaseConfirmation, setPurchaseConfirmation] = useState("");
   const monthMap = {
     jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
     jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
@@ -143,9 +144,11 @@ const Purchase = () => {
   const hasData = recordsInPeriod > 0;
 
   const handlePurchase = () => {
-    alert(
-      `Purchased ${purchaseAmount} tCO2e credits from ${selectedProvider.name} for $${totalCost}`
-    );
+    const formattedCredits = Number(purchaseAmount).toFixed(2);
+    const formattedCost = Number(totalCost).toFixed(2);
+    const confirmationMessage = `Purchased ${formattedCredits} carbon credits from Pera via ${selectedProvider.name}. $${formattedCost} has been deducted from your wallet.`;
+    setPurchaseConfirmation(confirmationMessage);
+    alert(confirmationMessage);
   };
 
   return (
@@ -228,6 +231,21 @@ const Purchase = () => {
               </span>
               .
             </p>
+            {purchaseConfirmation && (
+              <p
+                style={{
+                  marginTop: "12px",
+                  padding: "10px 12px",
+                  borderRadius: "10px",
+                  background: "#dcfce7",
+                  color: "#14532d",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                }}
+              >
+                {purchaseConfirmation}
+              </p>
+            )}
           </section>
         )}
       </main>

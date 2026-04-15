@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import { motion } from "framer-motion";
 import { BarChart3, Leaf, ShieldCheck, LineChart, ArrowRight } from "lucide-react";
-import { WalletButton } from "@txnlab/use-wallet-ui-react";
+import ecoTrackLogo from "../assets/ecotrack-logo.png";
 
 if (typeof document !== "undefined") {
   document.documentElement.style.scrollBehavior = "smooth";
@@ -125,9 +125,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700 text-sm font-bold text-slate-950">
-              E
-            </span>
+            <img src={ecoTrackLogo} alt="EcoTrack logo" className="h-9 w-9 rounded-md object-cover" />
             <span className="text-lg font-semibold tracking-tight text-slate-900">
               EcoTrack
             </span>
@@ -143,9 +141,6 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <div className="wui-custom-trigger">
-              <WalletButton />
-            </div>
             <button
               type="button"
               onClick={() => {

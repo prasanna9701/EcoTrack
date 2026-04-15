@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useDataContext } from "../context/DataContext";
 import { FaCloudUploadAlt, FaEdit, FaExclamationTriangle, FaTrash } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const pageStyles = {
   minHeight: "100vh",
@@ -76,6 +75,7 @@ const DataTab = () => {
     };
 
     const processFile = (file) => {
+        if (!file) return;
         setIsProcessing(true);
         // Simulate VLM Edge Case processing
         setTimeout(() => {
@@ -134,7 +134,12 @@ const DataTab = () => {
                 >
                     <FaCloudUploadAlt size={48} color="#4ade80" style={{ margin: "0 auto", marginBottom: "16px" }} />
                     <p>Drag and drop documents here (.pdf, .jpg, .png)</p>
-                    <input type="file" ref={fileInputRef} onChange={(e) => processFile(e.target.files[0])} className="hidden" />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={(e) => processFile(e.target.files?.[0])}
+                        className="hidden"
+                    />
                 </div>
 
                 <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e2e8f0", boxShadow: "0 6px 18px rgba(15,23,42,0.06)" }}>

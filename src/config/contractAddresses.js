@@ -1,4 +1,3 @@
-/* global BigInt */
 // Contract addresses — PLACEHOLDER until Testnet deployment
 // After deploying, run the deploy script which overwrites this file automatically.
 // Or manually replace the appId values with actual deployed App IDs.
