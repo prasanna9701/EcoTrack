@@ -5,7 +5,6 @@ import { getPriorityExtraction, buildUtilityItemFromSample } from "../utils/extr
 import { useWallet } from '@txnlab/use-wallet-react';
 import { issueSustainabilityReport, areContractsDeployed } from '../utils/algorandContracts';
 import BlockchainBadge from '../components/BlockchainBadge';
-import { motion } from 'framer-motion';
 
 const pageStyles = {
   minHeight: "100vh",

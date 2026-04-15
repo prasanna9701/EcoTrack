@@ -58,58 +58,6 @@ const EcoAssistant = () => {
 
   const lastUtilitySnapshotRef = useRef('');
 
-  const parseBillingPeriod = (text) => {
-    if (!text) return null;
-    const monthMap = {
-      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-      jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
-    };
-    const lower = text.toLowerCase();
-    const monthMatch = lower.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{4})/);
-    if (monthMatch) {
-      const month = monthMap[monthMatch[1].slice(0, 3)];
-      const year = Number(monthMatch[2]);
-      return new Date(year, month).getTime();
-    }
-    const isoMatch = lower.match(/(\d{4})[-/](\d{2})/);
-    if (isoMatch) {
-      const year = Number(isoMatch[1]);
-      const month = Number(isoMatch[2]) - 1;
-      return new Date(year, month).getTime();
-    }
-    return null;
-  };
-
-  const gasDateComparison = useMemo(() => {
-    const iglGasItems = utilityData
-      .filter((item) => item.type === 'Gas' && /igl|indraprastha/i.test(item.provider || ''))
-      .map((item) => ({
-        ...item,
-        dateValue: parseBillingPeriod(item.billingPeriod),
-      }))
-      .filter((item) => item.value != null);
-
-    if (iglGasItems.length < 2) return null;
-
-    const sorted = [...iglGasItems].sort((a, b) => (b.dateValue || 0) - (a.dateValue || 0));
-    const latest = sorted[0];
-    const previous = sorted[1];
-    if (!latest || !previous) return null;
-
-    if (latest.value > previous.value) {
-      return `Your ${latest.billingPeriod} gas usage was higher than ${previous.billingPeriod}.`;
-    }
-    if (latest.value < previous.value) {
-      return `Your ${latest.billingPeriod} gas usage was lower than ${previous.billingPeriod}.`;
-    }
-    return `Your ${latest.billingPeriod} gas usage matched your ${previous.billingPeriod} usage.`;
-  }, [utilityData]);
-
-  const highestUsageItem = useMemo(() => {
-    if (!utilityData.length) return null;
-    return utilityData.reduce((max, item) => (item.value > (max?.value || 0) ? item : max), null);
-  }, [utilityData]);
-
   const systemPrompt = "You are the EcoTrack Intelligence Agent, a professional sustainability consultant. Stop giving the same 'Hello! Upload a bill' response to every message. If the user greets you, respond warmly. If the user asks for seller or owner details, reply: 'This platform is developed by Akhil. For commercial licenses or custom integrations, please contact the administrator.' If the user suggests faking data, politely refuse and explain that EcoTrack is built for audit-ready compliance and transparency.";
 
   const messagesEndRef = useRef(null);
@@ -274,7 +222,6 @@ const EcoAssistant = () => {
       const isFutureProjection = /\b(future|2030|projection|forecast|predict|trend)\b/.test(lowerInput);
       const percentMatch = lowerInput.match(/(\d{1,3})\s*%/);
       const isWhatIf = /\bwhat if\b|\bcut.*usage\b|\breduce.*usage\b/.test(lowerInput);
-      const highFootprintAsk = /\b(high footprint|footprint|high emissions|carbon footprint)\b/.test(lowerInput);
       const didUtilityChange = utilitySnapshot !== lastUtilitySnapshotRef.current;
 
       const electricityTotal = utilityData.filter(item => item.type === 'Electricity').reduce((sum, item) => sum + (item.value || 0), 0);

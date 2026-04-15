@@ -65,7 +65,7 @@ export class AlgoWalletProvider {
         const data = encodeURIComponent(JSON.stringify(txnsToSign));
 
         return new Promise((resolve) => {
-            const popup = window.open(`${this.baseUrl}/rpc?type=sign&txns=${data}`, 'Kyra', 'width=450,height=700');
+            window.open(`${this.baseUrl}/rpc?type=sign&txns=${data}`, 'Kyra', 'width=450,height=700');
 
             const handler = (event) => {
                 if (event.origin !== this.baseUrl) return;

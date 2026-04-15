@@ -2,6 +2,12 @@
   "name": "carbon_ai",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "CI=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
   "dependencies": {
     "@agoralabs-sh/avm-web-provider": "^1.7.0",
     "@algorandfoundation/algokit-utils": "^9.2.0",
@@ -25,19 +31,15 @@
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "lute-connect": "^1.7.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "ox": "^0.9.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^15.7.4",
     "react-icons": "^5.6.0",
     "react-router-dom": "^7.13.1",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "tesseract.js": "^7.0.0",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "web-vitals": "^5.2.0"
   },
   "eslintConfig": {
     "extends": [
@@ -66,6 +68,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
-    "tailwindcss": "^3.4.19"
+    "tailwindcss": "^3.4.19",
+    "typescript": "^4.9.5"
   }
 }

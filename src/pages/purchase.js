@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useDataContext } from "../context/DataContext";
 import { generateCarbonReport } from "../utils/carbonLogicEngine";
 
@@ -76,15 +76,16 @@ const providers = [
   { name: "CarbonNeutral Inc.", pricePerTon: 18 },
 ];
 
+const monthMap = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
 const Purchase = () => {
   const { utilityData } = useDataContext();
   const [selectedProvider, setSelectedProvider] = useState(providers[0]);
   const [purchaseConfirmation, setPurchaseConfirmation] = useState("");
-  const monthMap = {
-    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
-  };
-  const parseBillingPeriod = (billingPeriod) => {
+  const parseBillingPeriod = useCallback((billingPeriod) => {
     if (!billingPeriod || typeof billingPeriod !== "string") return null;
     const [monthRaw, yearRaw] = billingPeriod.trim().split(/\s+/);
     if (!monthRaw || !yearRaw) return null;
@@ -92,7 +93,7 @@ const Purchase = () => {
     const year = Number(yearRaw);
     if (month === undefined || Number.isNaN(year)) return null;
     return { month, year };
-  };
+  }, []);
 
   const availablePeriods = useMemo(() => {
     const map = new Map();
@@ -105,7 +106,7 @@ const Purchase = () => {
       }
     });
     return Array.from(map.values()).sort((a, b) => (b.year - a.year) || (b.month - a.month));
-  }, [utilityData]);
+  }, [parseBillingPeriod, utilityData]);
   const selectedPeriod = availablePeriods[0] || {
     month: new Date().getMonth(),
     year: new Date().getFullYear(),
@@ -117,7 +118,7 @@ const Purchase = () => {
         const parsed = parseBillingPeriod(item.billingPeriod);
         return parsed && parsed.month === selectedPeriod.month && parsed.year === selectedPeriod.year;
       }),
-    [utilityData, selectedPeriod.month, selectedPeriod.year]
+    [parseBillingPeriod, utilityData, selectedPeriod.month, selectedPeriod.year]
   );
 
   const totalEmission = useMemo(() => {
