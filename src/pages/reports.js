@@ -1,7 +1,11 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useDataContext } from "../context/DataContext";
 import { FaBolt, FaFire, FaFileInvoice, FaCloudUploadAlt, FaTrashAlt } from "react-icons/fa";
 import { getPriorityExtraction, buildUtilityItemFromSample } from "../utils/extractionLogic";
+import { useWallet } from '@txnlab/use-wallet-react';
+import { issueSustainabilityReport, areContractsDeployed } from '../utils/algorandContracts';
+import BlockchainBadge from '../components/BlockchainBadge';
+import { motion } from 'framer-motion';
 
 const pageStyles = {
   minHeight: "100vh",
@@ -96,7 +100,11 @@ const deleteBtnStyles = {
 
 function Reports() {
   const { utilityData, addOrUpdateData, deleteData, setIsProcessing } = useDataContext();
+  const { activeAddress, transactionSigner } = useWallet();
   const fileInputRef = useRef(null);
+  const [issuingReport, setIssuingReport] = useState(false);
+  const [reportResult, setReportResult] = useState(null);
+  const [reportError, setReportError] = useState(null);
 
   // Grouping
   const electricData = utilityData.filter(d => d.type === 'Electricity');
@@ -182,6 +190,74 @@ function Reports() {
             </button>
             <input type="file" accept=".pdf,image/*" ref={fileInputRef} onChange={(e) => processFile(e.target.files[0])} className="hidden" style={{display:'none'}} />
         </div>
+
+        {/* Blockchain Report Issuance */}
+        {utilityData.length > 0 && (
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <button
+                onClick={async () => {
+                  if (!activeAddress || !transactionSigner) {
+                    setReportError('Connect your wallet first (top-right corner)');
+                    return;
+                  }
+                  if (!areContractsDeployed()) {
+                    setReportError('Contracts not yet deployed to Testnet');
+                    return;
+                  }
+                  setIssuingReport(true);
+                  setReportError(null);
+                  setReportResult(null);
+                  try {
+                    const totalE = utilityData.filter(d => d.type === 'Electricity').reduce((sum, d) => sum + (d.value || 0) * 0.0008, 0);
+                    const totalG = utilityData.filter(d => d.type === 'Gas').reduce((sum, d) => sum + (d.value || 0) * 0.002, 0);
+                    const totalEmissions = totalE + totalG;
+                    const result = await issueSustainabilityReport({
+                      reportData: {
+                        totalEmissionsMT: totalEmissions,
+                        offsetsMT: 0,
+                        reportPeriod: `FY${new Date().getFullYear()}`,
+                      },
+                      activeAddress,
+                      transactionSigner,
+                    });
+                    setReportResult(result);
+                  } catch (err) {
+                    setReportError(err.message);
+                  } finally {
+                    setIssuingReport(false);
+                  }
+                }}
+                disabled={issuingReport}
+                style={{
+                  ...uploadBtnStyles,
+                  background: issuingReport ? '#6b7280' : 'linear-gradient(135deg, #059669, #10b981)',
+                  cursor: issuingReport ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {issuingReport ? '⏳ Issuing NFT...' : '🔗 Issue on Blockchain'}
+              </button>
+              {!activeAddress && (
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>Connect wallet to issue</span>
+              )}
+            </div>
+            {reportError && (
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#ef4444', background: '#fef2f2', padding: '8px 12px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+                ⚠️ {reportError}
+              </div>
+            )}
+            {reportResult && (
+              <div style={{ marginTop: '8px' }}>
+                <BlockchainBadge
+                  txId={reportResult.txId}
+                  label="Sustainability Report NFT Issued"
+                  assetId={reportResult.assetId}
+                  variant="full"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {utilityData.length === 0 ? (
            <div style={{ textAlign: "center", padding: "60px", backgroundColor: "#f8fafc", borderRadius: "16px", border: "1px dashed #94a3b8" }}>

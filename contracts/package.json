@@ -1,0 +1,24 @@
+{
+  "name": "ecotrack-contracts",
+  "version": "1.0.0",
+  "description": "EcoTrack Algorand Smart Contracts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npx --yes @algorandfoundation/puya-ts build smart_contracts",
+    "test": "vitest run",
+    "deploy": "tsx smart_contracts/deploy-config.ts"
+  },
+  "dependencies": {
+    "@algorandfoundation/algorand-typescript": "^1.1.0",
+    "@algorandfoundation/algokit-utils": "^9.1.5",
+    "algosdk": "^3.5.2"
+  },
+  "devDependencies": {
+    "@algorandfoundation/puya-ts": "^1.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5",
+    "dotenv": "^16.4.7"
+  }
+}

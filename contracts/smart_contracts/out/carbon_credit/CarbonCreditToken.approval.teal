@@ -1,0 +1,536 @@
+#pragma version 11
+#pragma typetrack false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    intcblock 1 0 32 8
+    bytecblock "assetId" "creator" 0x151f7c75 "rc"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:32
+    // export class CarbonCreditToken extends Contract {
+    txn OnCompletion
+    !
+    assert // OnCompletion must be NoOp
+    txn ApplicationID
+    bz main_create_NoOp@9
+    pushbytess 0xbb26db40 0x4820b478 0xa8da73d6 0x0cb0d488 0x4364dca8 // method "bootstrap(pay)uint64", method "mint(address,uint64)void", method "retire(uint64,axfer,pay)void", method "getAssetId()uint64", method "getRetirementCount(address)uint64"
+    txna ApplicationArgs 0
+    match bootstrap mint retire getAssetId getRetirementCount
+    err
+
+main_create_NoOp@9:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:32
+    // export class CarbonCreditToken extends Contract {
+    pushbytes 0xb8447b36 // method "createApplication()void"
+    txna ApplicationArgs 0
+    match createApplication
+    err
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.createApplication[routing]() -> void:
+createApplication:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:37
+    // creator = GlobalState<bytes>({ key: 'creator' })
+    bytec_1 // "creator"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:50
+    // this.creator.value = Txn.sender.bytes
+    txn Sender
+    app_global_put
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:49
+    // public createApplication(): void {
+    intc_0 // 1
+    return
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.bootstrap[routing]() -> void:
+bootstrap:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:60
+    // public bootstrap(mbrPay: gtxn.PaymentTxn): uint64 {
+    txn GroupIndex
+    intc_0 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_0 // pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:63
+    // Txn.sender.bytes === this.creator.value,
+    txn Sender
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:37
+    // creator = GlobalState<bytes>({ key: 'creator' })
+    bytec_1 // "creator"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:63
+    // Txn.sender.bytes === this.creator.value,
+    app_global_get_ex
+    assert // check GlobalState exists
+    ==
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:62-65
+    // assert(
+    //   Txn.sender.bytes === this.creator.value,
+    //   'Only creator can bootstrap',
+    // )
+    assert // Only creator can bootstrap
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:68
+    // assert(!this.assetId.hasValue, 'Already bootstrapped')
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:34
+    // assetId = GlobalState<uint64>({ key: 'assetId' })
+    bytec_0 // "assetId"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:68
+    // assert(!this.assetId.hasValue, 'Already bootstrapped')
+    app_global_get_ex
+    bury 1
+    !
+    assert // Already bootstrapped
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:71-73
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    gtxns Receiver
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:72
+    // receiver: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:71-73
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    ==
+    assert // assert target is match for conditions
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:76-87
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(10_000_000),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Carbon Credit',
+    //     unitName: 'ECC',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     clawback: Global.currentApplicationAddress,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_begin
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:82
+    // manager: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:83-84
+    // reserve: Global.currentApplicationAddress,
+    // clawback: Global.currentApplicationAddress,
+    dupn 2
+    itxn_field ConfigAssetClawback
+    itxn_field ConfigAssetReserve
+    itxn_field ConfigAssetManager
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:81
+    // unitName: 'ECC',
+    pushbytes "ECC"
+    itxn_field ConfigAssetUnitName
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:80
+    // assetName: 'EcoTrack Carbon Credit',
+    pushbytes "EcoTrack Carbon Credit"
+    itxn_field ConfigAssetName
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:79
+    // decimals: Uint64(0),
+    intc_1 // 0
+    itxn_field ConfigAssetDecimals
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:78
+    // total: Uint64(10_000_000),
+    pushint 10000000 // 10000000
+    itxn_field ConfigAssetTotal
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:76-86
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(10_000_000),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Carbon Credit',
+    //     unitName: 'ECC',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     clawback: Global.currentApplicationAddress,
+    //     fee: 0,
+    //   })
+    pushint 3 // 3
+    itxn_field TypeEnum
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:85
+    // fee: 0,
+    intc_1 // 0
+    itxn_field Fee
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:76-87
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(10_000_000),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Carbon Credit',
+    //     unitName: 'ECC',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     clawback: Global.currentApplicationAddress,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_submit
+    itxn CreatedAssetID
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:34
+    // assetId = GlobalState<uint64>({ key: 'assetId' })
+    bytec_0 // "assetId"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:89
+    // this.assetId.value = createTxn.createdAsset.id
+    dig 1
+    app_global_put
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:60
+    // public bootstrap(mbrPay: gtxn.PaymentTxn): uint64 {
+    itob
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.mint[routing]() -> void:
+mint:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:100-103
+    // public mint(
+    //   recipient: Account,
+    //   amount: uint64,
+    // ): void {
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:106
+    // Txn.sender.bytes === this.creator.value,
+    txn Sender
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:37
+    // creator = GlobalState<bytes>({ key: 'creator' })
+    bytec_1 // "creator"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:106
+    // Txn.sender.bytes === this.creator.value,
+    app_global_get_ex
+    assert // check GlobalState exists
+    ==
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:105-108
+    // assert(
+    //   Txn.sender.bytes === this.creator.value,
+    //   'Only creator can mint',
+    // )
+    assert // Only creator can mint
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:110
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:34
+    // assetId = GlobalState<uint64>({ key: 'assetId' })
+    bytec_0 // "assetId"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:110
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    app_global_get_ex
+    assert // Not bootstrapped
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:113-120
+    // itxn
+    //   .assetTransfer({
+    //     xferAsset: Asset(this.assetId.value),
+    //     assetReceiver: recipient,
+    //     assetAmount: amount,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_begin
+    itxn_field XferAsset
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:113-119
+    // itxn
+    //   .assetTransfer({
+    //     xferAsset: Asset(this.assetId.value),
+    //     assetReceiver: recipient,
+    //     assetAmount: amount,
+    //     fee: 0,
+    //   })
+    pushint 4 // 4
+    itxn_field TypeEnum
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:118
+    // fee: 0,
+    intc_1 // 0
+    itxn_field Fee
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:113-120
+    // itxn
+    //   .assetTransfer({
+    //     xferAsset: Asset(this.assetId.value),
+    //     assetReceiver: recipient,
+    //     assetAmount: amount,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_submit
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:100-103
+    // public mint(
+    //   recipient: Account,
+    //   amount: uint64,
+    // ): void {
+    intc_0 // 1
+    return
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.retire[routing]() -> void:
+retire:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:132-136
+    // public retire(
+    //   amount: uint64,
+    //   axferTxn: gtxn.AssetTransferTxn,
+    //   mbrPay: gtxn.PaymentTxn,
+    // ): void {
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    dup
+    txn GroupIndex
+    pushint 2 // 2
+    -
+    dup
+    gtxns TypeEnum
+    pushint 4 // axfer
+    ==
+    assert // transaction type is axfer
+    txn GroupIndex
+    intc_0 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_0 // pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:137
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:34
+    // assetId = GlobalState<uint64>({ key: 'assetId' })
+    bytec_0 // "assetId"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:137
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    app_global_get_ex
+    assert // Not bootstrapped
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:140-144
+    // assertMatch(axferTxn, {
+    //   xferAsset: Asset(this.assetId.value),
+    //   assetReceiver: Global.currentApplicationAddress,
+    //   assetAmount: amount,
+    // })
+    dig 2
+    gtxns XferAsset
+    ==
+    dig 2
+    gtxns AssetReceiver
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:142
+    // assetReceiver: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:140-144
+    // assertMatch(axferTxn, {
+    //   xferAsset: Asset(this.assetId.value),
+    //   assetReceiver: Global.currentApplicationAddress,
+    //   assetAmount: amount,
+    // })
+    ==
+    &&
+    uncover 2
+    gtxns AssetAmount
+    uncover 3
+    ==
+    &&
+    assert // assert target is match for conditions
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:147-149
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    gtxns Receiver
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:148
+    // receiver: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:147-149
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    ==
+    assert // assert target is match for conditions
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:151
+    // const senderBytes: bytes = Txn.sender.bytes
+    txn Sender
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:152
+    // const timestamp: uint64 = Global.latestTimestamp
+    global LatestTimestamp
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:155
+    // let count: uint64 = Uint64(0)
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:40
+    // retirementCounts = BoxMap<bytes, uint64>({ keyPrefix: 'rc' })
+    bytec_3 // "rc"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:151
+    // const senderBytes: bytes = Txn.sender.bytes
+    txn Sender
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:40
+    // retirementCounts = BoxMap<bytes, uint64>({ keyPrefix: 'rc' })
+    concat
+    dup
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:156
+    // if (this.retirementCounts(senderBytes).exists) {
+    box_len
+    bury 1
+    bz retire_after_if_else@3
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:157
+    // count = this.retirementCounts(senderBytes).value
+    dup
+    box_get
+    assert // Box must have value
+    btoi
+    bury 2
+
+retire_after_if_else@3:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:161
+    // const recordKey: bytes = op.concat(senderBytes, op.itob(count))
+    dig 1
+    dup
+    itob
+    dig 5
+    dup
+    cover 3
+    swap
+    concat
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:163-166
+    // const record: RetirementRecord = {
+    //   amount: amount,
+    //   timestamp: timestamp,
+    // }
+    dig 7
+    itob
+    dig 6
+    itob
+    swap
+    dig 1
+    concat
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:43
+    // retirements = BoxMap<bytes, RetirementRecord>({ keyPrefix: 'rt' })
+    pushbytes "rt"
+    uncover 3
+    concat
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:167
+    // this.retirements(recordKey).value = clone(record)
+    swap
+    box_put
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:170
+    // this.retirementCounts(senderBytes).value = count + Uint64(1)
+    swap
+    intc_0 // 1
+    +
+    itob
+    dig 3
+    swap
+    box_put
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:173
+    // emit<CreditsRetired>('CreditsRetired', senderBytes, amount, timestamp)
+    pushbytes 0x0020
+    uncover 2
+    concat
+    pushbytes 0x0012
+    dig 8
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    pushbytes 0x7868a438 // method "CreditsRetired(byte[],uint64,uint64)"
+    swap
+    concat
+    log
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:132-136
+    // public retire(
+    //   amount: uint64,
+    //   axferTxn: gtxn.AssetTransferTxn,
+    //   mbrPay: gtxn.PaymentTxn,
+    // ): void {
+    intc_0 // 1
+    return
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.getAssetId[routing]() -> void:
+getAssetId:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:180
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:34
+    // assetId = GlobalState<uint64>({ key: 'assetId' })
+    bytec_0 // "assetId"
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:180
+    // assert(this.assetId.hasValue, 'Not bootstrapped')
+    app_global_get_ex
+    assert // Not bootstrapped
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:179
+    // public getAssetId(): uint64 {
+    itob
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+
+// smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.getRetirementCount[routing]() -> void:
+getRetirementCount:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:187
+    // public getRetirementCount(addr: Account): uint64 {
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:40
+    // retirementCounts = BoxMap<bytes, uint64>({ keyPrefix: 'rc' })
+    bytec_3 // "rc"
+    swap
+    concat
+    dup
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:189
+    // if (this.retirementCounts(addrBytes).exists) {
+    box_len
+    bury 1
+    bz getRetirementCount_after_if_else@3
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:190
+    // return this.retirementCounts(addrBytes).value
+    dup
+    box_get
+    assert // Box must have value
+    btoi
+
+getRetirementCount_after_inlined_smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.getRetirementCount@4:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:187
+    // public getRetirementCount(addr: Account): uint64 {
+    itob
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+getRetirementCount_after_if_else@3:
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:192
+    // return Uint64(0)
+    intc_1 // 0
+    // smart_contracts/carbon_credit/CarbonCreditToken.algo.ts:187
+    // public getRetirementCount(addr: Account): uint64 {
+    b getRetirementCount_after_inlined_smart_contracts/carbon_credit/CarbonCreditToken.algo.ts::CarbonCreditToken.getRetirementCount@4

@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDataContext } from "../context/DataContext";
-// Sidebar is rendered by the app layout (App.js)
+import { useWallet } from '@txnlab/use-wallet-react';
+import { buyAndRetireOffset, areContractsDeployed } from '../utils/algorandContracts';
+import BlockchainBadge from '../components/BlockchainBadge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const pageStyles = {
   minHeight: "100vh",
@@ -128,7 +131,17 @@ const statusBadge = (status) => ({
 
 function Emission() {
   const { globalEmissions, isProcessing, utilityData } = useDataContext();
+  const { activeAddress, transactionSigner } = useWallet();
+  const [buyingOffer, setBuyingOffer] = useState(null);
+  const [retireResult, setRetireResult] = useState(null);
+  const [retireError, setRetireError] = useState(null);
   
+  // Demo marketplace offers (in production these would come from the contract)
+  const demoOffers = [
+    { id: 1, seller: 'ALGO...X4Q2', project: 'Rajasthan Solar Farm', amount: 50, pricePerUnit: 500000, remaining: 50 },
+    { id: 2, seller: 'ALGO...K7M1', project: 'Sundarbans Mangrove Restoration', amount: 25, pricePerUnit: 750000, remaining: 25 },
+    { id: 3, seller: 'ALGO...P9R3', project: 'Tamil Nadu Wind Corridor', amount: 100, pricePerUnit: 350000, remaining: 100 },
+  ];
   const scope1 = globalEmissions.breakdown?.scope1?.value || 0;
   const scope2 = globalEmissions.breakdown?.scope2?.value || 0;
   // Default to static if 0 for visual purposes of the dashboard if needed, but we connect real data:
@@ -259,6 +272,147 @@ function Emission() {
             {reductionProgress}% toward 2030 Net-Zero Target
           </p>
         </section>
+
+        {/* Buy & Retire Carbon Offsets — Embedded Marketplace */}
+        <section style={sectionStyles}>
+          <h2 style={titleStyles}>Buy & Retire Carbon Offsets</h2>
+          <p style={subTitleStyles}>
+            Purchase verified carbon credits from the marketplace and retire them immutably on the Algorand blockchain.
+          </p>
+
+          {!activeAddress && (
+            <div style={{
+              padding: '16px',
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+              borderRadius: '12px',
+              border: '1px solid #bbf7d0',
+              marginBottom: '16px',
+              fontSize: '13px',
+              color: '#166534',
+            }}>
+              🔐 Connect your Algorand wallet (top-right) to buy and retire offsets.
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+            {demoOffers.map((offer) => (
+              <motion.div
+                key={offer.id}
+                whileHover={{ scale: 1.02 }}
+                style={{
+                  ...cardStyles,
+                  border: '1px solid #dcfce7',
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.2s',
+                }}
+              >
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#166534', marginBottom: '4px' }}>
+                  {offer.project}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+                  Seller: {offer.seller}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Available</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#4ade80' }}>{offer.remaining} MT</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Price / Credit</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{(offer.pricePerUnit / 1_000_000).toFixed(2)} ALGO</div>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!activeAddress || !transactionSigner) {
+                      setRetireError('Connect your wallet first');
+                      return;
+                    }
+                    if (!areContractsDeployed()) {
+                      setRetireError('Contracts not yet deployed');
+                      return;
+                    }
+                    setBuyingOffer(offer.id);
+                    setRetireError(null);
+                    setRetireResult(null);
+                    try {
+                      const result = await buyAndRetireOffset({
+                        offerId: offer.id,
+                        amount: 1,
+                        totalCostMicroAlgos: offer.pricePerUnit,
+                        activeAddress,
+                        transactionSigner,
+                      });
+                      setRetireResult({ ...result, project: offer.project, amount: 1 });
+                    } catch (err) {
+                      setRetireError(err.message);
+                    } finally {
+                      setBuyingOffer(null);
+                    }
+                  }}
+                  disabled={buyingOffer === offer.id || !activeAddress}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: buyingOffer === offer.id
+                      ? '#94a3b8'
+                      : activeAddress
+                        ? 'linear-gradient(135deg, #059669, #10b981)'
+                        : '#e2e8f0',
+                    color: activeAddress ? '#fff' : '#94a3b8',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: buyingOffer === offer.id || !activeAddress ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {buyingOffer === offer.id ? '⏳ Processing...' : 'Buy & Retire 1 Credit'}
+                </button>
+              </motion.div>
+            ))}
+          </div>
+
+          {retireError && (
+            <div style={{ marginTop: '12px', fontSize: '12px', color: '#ef4444', background: '#fef2f2', padding: '8px 12px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+              ⚠️ {retireError}
+            </div>
+          )}
+
+          <AnimatePresence>
+            {retireResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)',
+                  borderRadius: '12px',
+                  border: '1px solid #6ee7b7',
+                }}
+              >
+                <div style={{ fontWeight: 600, fontSize: '14px', color: '#065f46', marginBottom: '8px' }}>
+                  🌿 Retirement Certificate
+                </div>
+                <div style={{ fontSize: '12px', color: '#047857', marginBottom: '4px' }}>
+                  <strong>Project:</strong> {retireResult.project}
+                </div>
+                <div style={{ fontSize: '12px', color: '#047857', marginBottom: '8px' }}>
+                  <strong>Credits Retired:</strong> {retireResult.amount} MT CO₂e
+                </div>
+                <BlockchainBadge
+                  txId={retireResult.txId}
+                  label="Offset Retired on Algorand"
+                  variant="compact"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
         <section style={infoSectionStyles}>
           <h2 style={infoTitleStyles}>Emission Scopes Explained</h2>
           <ul style={infoListStyles}>

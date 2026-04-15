@@ -19,6 +19,8 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import EcoAssistant from "./pages/EcoAssistant";
 import DataTab from "./pages/data";
 import { DataProvider } from "./context/DataContext";
+import { WalletProviders } from "./context/WalletProviders";
+import DashboardHeader from "./components/DashboardHeader";
 
 function AppRoutes() {
   const location = useLocation();
@@ -36,7 +38,9 @@ function AppRoutes() {
       {!isAuthRoute && <Sidebar />}
       {!isAuthRoute && <EcoAssistant />}
 
-      <div style={{ flex: 1 }}>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {!isAuthRoute && <DashboardHeader />}
         <Routes>
 
           <Route path="/" element={<LandingPage />} />
@@ -104,13 +108,15 @@ function AppRoutes() {
 
 function App() {
   return (
-    <DataProvider>
-      <SidebarProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </SidebarProvider>
-    </DataProvider>
+    <WalletProviders>
+      <DataProvider>
+        <SidebarProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </SidebarProvider>
+      </DataProvider>
+    </WalletProviders>
   );
 }
 
