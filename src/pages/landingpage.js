@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import { motion } from "framer-motion";
 import { BarChart3, Leaf, ShieldCheck, LineChart, ArrowRight } from "lucide-react";
+import { WalletButton } from "@txnlab/use-wallet-ui-react";
 
 if (typeof document !== "undefined") {
   document.documentElement.style.scrollBehavior = "smooth";
@@ -142,6 +143,9 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <div className="wui-custom-trigger">
+              <WalletButton />
+            </div>
             <button
               type="button"
               onClick={() => {
