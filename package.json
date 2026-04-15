@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@agoralabs-sh/avm-web-provider": "^1.7.0",
+    "@algorandfoundation/algokit-utils": "^9.2.0",
     "@blockshake/defly-connect": "^1.2.1",
     "@perawallet/connect": "^1.5.2",
     "@supabase/supabase-js": "^2.101.0",
@@ -38,7 +39,13 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "env": {
+      "es2020": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020
+    }
   },
   "browserslist": {
     "production": [

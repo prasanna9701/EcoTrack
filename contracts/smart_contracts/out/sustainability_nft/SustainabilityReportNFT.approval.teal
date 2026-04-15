@@ -1,0 +1,343 @@
+#pragma version 11
+#pragma typetrack false
+
+// @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
+main:
+    intcblock 0 1 2 8
+    bytecblock "r" 0x151f7c75
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:32
+    // export class SustainabilityReportNFT extends Contract {
+    txn OnCompletion
+    !
+    assert // OnCompletion must be NoOp
+    txn ApplicationID
+    bz main_create_NoOp@6
+    pushbytess 0xc5a3f8f6 0xb64a5e60 // method "issueReport(byte[],string,byte[],uint64,uint64,pay)uint64", method "verifyReport(byte[],byte[])(uint64,uint64,uint64,uint64)"
+    txna ApplicationArgs 0
+    match issueReport verifyReport
+    err
+
+main_create_NoOp@6:
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:32
+    // export class SustainabilityReportNFT extends Contract {
+    pushbytes 0xb8447b36 // method "createApplication()void"
+    txna ApplicationArgs 0
+    match main_createApplication_route@7
+    err
+
+main_createApplication_route@7:
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:40
+    // public createApplication(): void {
+    intc_1 // 1
+    return
+
+
+// smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts::SustainabilityReportNFT.issueReport[routing]() -> void:
+issueReport:
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:56-63
+    // public issueReport(
+    //   reportHash: bytes,
+    //   reportPeriod: string,
+    //   reportPeriodHash: bytes,
+    //   totalEmissionsMT: uint64,
+    //   offsetsMT: uint64,
+    //   mbrPay: gtxn.PaymentTxn,
+    // ): uint64 {
+    txna ApplicationArgs 1
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    txna ApplicationArgs 2
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    txna ApplicationArgs 3
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    txna ApplicationArgs 4
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    dup
+    btoi
+    txna ApplicationArgs 5
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    dup
+    btoi
+    txn GroupIndex
+    intc_1 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_1 // pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:65-67
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    gtxns Receiver
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:66
+    // receiver: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:65-67
+    // assertMatch(mbrPay, {
+    //   receiver: Global.currentApplicationAddress,
+    // })
+    ==
+    assert // assert target is match for conditions
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:70
+    // const boxKey: bytes = op.concat(Txn.sender.bytes, reportPeriodHash)
+    txn Sender
+    uncover 5
+    concat
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:35
+    // reports = BoxMap<bytes, ReportMetadata>({ keyPrefix: 'r' })
+    bytec_0 // "r"
+    swap
+    concat
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:74
+    // !this.reports(boxKey).exists,
+    dup
+    box_len
+    bury 1
+    !
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:73-76
+    // assert(
+    //   !this.reports(boxKey).exists,
+    //   'Report already issued for this period',
+    // )
+    assert // Report already issued for this period
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:78
+    // const timestamp: uint64 = Global.latestTimestamp
+    global LatestTimestamp
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:91-102
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(1),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Report',
+    //     unitName: 'ECORPT',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     note: noteStr,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_begin
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:97
+    // manager: Global.currentApplicationAddress,
+    global CurrentApplicationAddress
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:98
+    // reserve: Global.currentApplicationAddress,
+    dup
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:99
+    // note: noteStr,
+    pushbytes "{\"standard\":\"arc69\",\"description\":\"EcoTrack Sustainability Report\",\"mediaType\":\"application/json\"}"
+    itxn_field Note
+    itxn_field ConfigAssetReserve
+    itxn_field ConfigAssetManager
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:96
+    // unitName: 'ECORPT',
+    pushbytes "ECORPT"
+    itxn_field ConfigAssetUnitName
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:95
+    // assetName: 'EcoTrack Report',
+    pushbytes "EcoTrack Report"
+    itxn_field ConfigAssetName
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:94
+    // decimals: Uint64(0),
+    intc_0 // 0
+    itxn_field ConfigAssetDecimals
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:93
+    // total: Uint64(1),
+    intc_1 // 1
+    itxn_field ConfigAssetTotal
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:91-101
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(1),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Report',
+    //     unitName: 'ECORPT',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     note: noteStr,
+    //     fee: 0,
+    //   })
+    pushint 3 // 3
+    itxn_field TypeEnum
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:100
+    // fee: 0,
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:91-102
+    // const createTxn = itxn
+    //   .assetConfig({
+    //     total: Uint64(1),
+    //     decimals: Uint64(0),
+    //     assetName: 'EcoTrack Report',
+    //     unitName: 'ECORPT',
+    //     manager: Global.currentApplicationAddress,
+    //     reserve: Global.currentApplicationAddress,
+    //     note: noteStr,
+    //     fee: 0,
+    //   })
+    //   .submit()
+    itxn_submit
+    itxn CreatedAssetID
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:107-112
+    // const metadata: ReportMetadata = {
+    //   assetId: newAssetId,
+    //   totalEmissions: totalEmissionsMT,
+    //   offsets: offsetsMT,
+    //   timestamp: timestamp,
+    // }
+    itob
+    uncover 5
+    itob
+    dig 1
+    swap
+    concat
+    uncover 4
+    itob
+    concat
+    uncover 2
+    itob
+    swap
+    dig 1
+    concat
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:113
+    // this.reports(boxKey).value = clone(metadata)
+    uncover 3
+    swap
+    box_put
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:117
+    // Txn.sender.bytes,
+    txn Sender
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:116-123
+    // emit<ReportIssued>('ReportIssued',
+    //   Txn.sender.bytes,
+    //   newAssetId,
+    //   reportHash,
+    //   totalEmissionsMT,
+    //   offsetsMT,
+    //   timestamp,
+    // )
+    dig 2
+    concat
+    pushbytes 0x0042
+    concat
+    uncover 4
+    concat
+    uncover 3
+    concat
+    swap
+    concat
+    uncover 2
+    concat
+    pushbytes 0xb093554a // method "ReportIssued(byte[32],uint64,byte[],uint64,uint64,uint64)"
+    swap
+    concat
+    log
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:56-63
+    // public issueReport(
+    //   reportHash: bytes,
+    //   reportPeriod: string,
+    //   reportPeriodHash: bytes,
+    //   totalEmissionsMT: uint64,
+    //   offsetsMT: uint64,
+    //   mbrPay: gtxn.PaymentTxn,
+    // ): uint64 {
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts::SustainabilityReportNFT.verifyReport[routing]() -> void:
+verifyReport:
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:135-138
+    // public verifyReport(
+    //   addr: bytes,
+    //   reportPeriodHash: bytes,
+    // ): ReportMetadata {
+    txna ApplicationArgs 1
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    txna ApplicationArgs 2
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    extract 2 0
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:139
+    // const boxKey: bytes = op.concat(addr, reportPeriodHash)
+    concat
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:35
+    // reports = BoxMap<bytes, ReportMetadata>({ keyPrefix: 'r' })
+    bytec_0 // "r"
+    swap
+    concat
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:140
+    // assert(this.reports(boxKey).exists, 'Report not found')
+    dup
+    box_len
+    bury 1
+    assert // Report not found
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:141
+    // return clone(this.reports(boxKey).value)
+    box_get
+    pop
+    // smart_contracts/sustainability_nft/SustainabilityReportNFT.algo.ts:135-138
+    // public verifyReport(
+    //   addr: bytes,
+    //   reportPeriodHash: bytes,
+    // ): ReportMetadata {
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return

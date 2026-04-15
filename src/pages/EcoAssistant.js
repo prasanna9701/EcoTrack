@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Leaf, X, Send, Bot, Paperclip } from 'lucide-react';
+import { Leaf, X, Send, Bot, Paperclip, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDataContext } from '../context/DataContext';
 import { getPriorityExtraction, buildUtilityItemFromSample } from '../utils/extractionLogic';
+import { useWallet } from '@txnlab/use-wallet-react';
+import { attestEmissionRecord, areContractsDeployed } from '../utils/algorandContracts';
+import BlockchainBadge from '../components/BlockchainBadge';
 
 const EcoAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,8 +20,10 @@ const EcoAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(false);
   const [lastQuestions, setLastQuestions] = useState([]);
+  const [attestingId, setAttestingId] = useState(null);
   
   const { addOrUpdateData, utilityData } = useDataContext();
+  const { activeAddress, transactionSigner } = useWallet();
   const totalEmissions = useMemo(() => {
     let total = 0;
     utilityData.forEach((item) => {
@@ -195,9 +200,48 @@ const EcoAssistant = () => {
      }, 1500);
   };
 
-  const handleCardConfirm = (cardData, messageId) => {
+  const handleCardConfirm = async (cardData, messageId) => {
      addOrUpdateData(cardData); // Dispatch to global state
      setMessages(prev => prev.map(m => m.id === messageId ? {...m, cardData: null, text: m.text + " ✅ Confirmed and Synced!"} : m));
+
+     // --- Algorand Attestation ---
+     if (activeAddress && transactionSigner && areContractsDeployed()) {
+       setAttestingId(messageId);
+       try {
+         const scopeType = cardData.type === 'Gas' ? 1 : 2; // Scope 1 for gas, Scope 2 for electricity
+         const result = await attestEmissionRecord({
+           provider: cardData.provider || 'Unknown',
+           billingPeriod: cardData.billingPeriod || '',
+           value: cardData.value || 0,
+           unit: cardData.unit || '',
+           scopeType,
+           activeAddress,
+           transactionSigner,
+         });
+
+         setMessages(prev => [...prev, {
+           id: Date.now(),
+           text: '🔗 Emission record attested on Algorand blockchain!',
+           sender: 'bot',
+           blockchainBadge: { txId: result.txId, label: 'Verified on Algorand' },
+         }]);
+       } catch (err) {
+         console.error('Attestation failed:', err);
+         setMessages(prev => [...prev, {
+           id: Date.now(),
+           text: `⚠️ Blockchain attestation failed: ${err.message}. Your data is still saved locally.`,
+           sender: 'bot',
+         }]);
+       } finally {
+         setAttestingId(null);
+       }
+     } else if (!activeAddress) {
+       setMessages(prev => [...prev, {
+         id: Date.now(),
+         text: '🔐 Connect your Algorand wallet (top-right) to create a tamper-proof blockchain attestation of this record.',
+         sender: 'bot',
+       }]);
+     }
   };
 
   const handleSend = () => {
@@ -411,20 +455,31 @@ const EcoAssistant = () => {
                         {msg.text}
                       </div>
                       {msg.cardData && <MiniCard data={msg.cardData} messageId={msg.id} />}
+                      {msg.blockchainBadge && (
+                        <div className="mt-2">
+                          <BlockchainBadge
+                            txId={msg.blockchainBadge.txId}
+                            label={msg.blockchainBadge.label}
+                            variant="full"
+                          />
+                        </div>
+                      )}
                   </div>
                 </motion.div>
               ))}
               
-              {isTyping && (
+              {(isTyping || attestingId) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-slate-100 text-slate-500 border border-slate-200 p-3 rounded-2xl rounded-bl-none flex gap-1">
-                    <span className="animate-bounce">.</span>
-                    <span className="animate-bounce delay-100">.</span>
-                    <span className="animate-bounce delay-200">.</span>
+                  <div className="bg-slate-100 text-slate-500 border border-slate-200 p-3 rounded-2xl rounded-bl-none flex gap-1 items-center">
+                    {attestingId ? (
+                      <><Shield className="w-4 h-4 text-green-500 animate-pulse mr-1" /> Attesting on Algorand...</>
+                    ) : (
+                      <><span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span></>
+                    )}
                   </div>
                 </motion.div>
               )}

@@ -1,0 +1,8 @@
+[project]
+type = "contract"
+name = "ecotrack-contracts"
+
+[project.run]
+build = { commands = ["npx --yes @algorandfoundation/puya-ts build smart_contracts"] }
+test = { commands = ["npx vitest run"] }
+deploy = { commands = ["npx tsx smart_contracts/deploy-config.ts"], environment_secrets = ["DEPLOYER_MNEMONIC"] }
