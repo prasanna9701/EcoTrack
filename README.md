@@ -1,138 +1,110 @@
 # EcoTrack (Carbon AI)
 
-A modern React-based web application for carbon emissions tracking and environmental sustainability management. EcoTrack helps organizations monitor, report, and reduce their carbon footprint through real-time monitoring, Scope 1–3 automation, forecasting, and audit-ready reporting.
+A state-of-the-art sustainability platform that combines **Local OCR**, **AI-driven Carbon Tracking**, and **Algorand Blockchain** for immutable emission notarization and carbon credit trading.
 
-## Features
+## 🚀 Key Features
 
-- **Real-time Monitoring**: Unified visibility across facilities with live emissions signals and anomaly alerts.
-- **Scope 1–3 Automation**: Structured data capture and workflows aligned to GHG Protocol and reporting cycles.
-- **Forecasting & Scenarios**: Model trajectories and initiatives to prioritize emission reduction efforts.
-- **Audit-Ready Reporting**: Exportable narratives, backend emails natively pushed securely over edge-networking layers.
-- **User Authentication**: Secure login/logout with Supabase.
-- **Real-time Peer Benchmarking**: Empowers instant scoring algorithm updates syncing dashboard displays via optimized PubSub tracking natively simulating growth coaching.
-- **Precision Grounding**: Calculates real-world conversion metrics applying strict India-grid float calculations removing UX gamifications limits.
-- **Intelligent OCR NLP**: Extracts inputs dynamically mimicking visual file-parsing through conversational safety cycles before storing database parameters natively.
-- **Dashboard**: Interactive panels for emissions, energy usage, configured entirely into Framer Motion.
-- **Responsive Design**: Dark-themed UI with Tailwind CSS and smooth animations natively attached organically.
+- **Local-First Privacy OCR**: Extract billing data (Electricity/Gas) entirely in the browser using Tesseract.js. No cloud processing for your sensitive data.
+- **Blockchain-Verified Emissions**: Notarize your carbon footprint on the Algorand blockchain to create an immutable, audit-ready sustainability record.
+- **Carbon Credit Ecosystem**: Mint, trade, and retire carbon offset tokens (ASA) via a decentralized marketplace.
+- **Eco Assistant**: A conversational AI agent that guides you through data ingestion, scenario modeling, and reduction strategies.
+- **Precision Calculations**: Grounded in real-world emission factors (e.g., India-grid standards) with high-precision float calculations.
+- **Connect Wallet**: Integrated support for Pera, Defly, and Lute/Kibisis wallets.
 
-## Prerequisites
+## 🛠️ Technology Stack
 
-Before setting up, ensure you have the following installed:
+- **Frontend**: React 19, Tailwind CSS, Framer Motion.
+- **Blockchain**: Algorand (TEAL/TypeScript contracts).
+- **Backend/Auth**: Supabase.
+- **OCR Engine**: Tesseract.js.
 
-- **Node.js** (v14 or higher): Download from [nodejs.org](https://nodejs.org/) (LTS recommended).
-- **npm** (comes with Node.js) or **yarn/pnpm** (optional alternatives).
-- **Git** (for cloning the repo, if needed).
+## 📦 Prerequisites
 
-Verify installations:
+- **Node.js** (v18+ recommended)
+- **AlgoKit CLI** (for contract deployment)
+- **Docker** (to run localnet, if not using Testnet)
+
+## 🏗️ Getting Started
+
+### 1. Repository Setup
+
 ```bash
-node --version
-npm --version
+git clone https://github.com/prasanna9701/EcoTrack.git
+cd EcoTrack
+npm install
 ```
 
-## Alternative Setup with Conda
+### 2. Environment Configuration
 
-If you prefer using Conda for environment management (e.g., for isolation or multiple projects), follow these steps instead of the npm setup below.
+You will need two `.env` files:
 
-1. **Install Conda** (if not installed):
-   - Download Miniconda from [miniconda.com](https://docs.conda.io/en/latest/miniconda.html).
-   - Verify: `conda --version`.
+#### Root Directory (`.env.local`)
+Create a `.env.local` file at the root:
+```env
+REACT_APP_SUPABASE_URL=your_supabase_url
+REACT_APP_SUPABASE_KEY=your_supabase_anon_key
+REACT_APP_GEMINI_API_KEY=your_gemini_api_key
+```
 
-2. **Create and Activate Environment**:
-   ```bash
-   conda create -n ecotrack-env nodejs
-   conda activate ecotrack-env
-   ```
+#### Contracts Directory (`contracts/.env`)
+Create a `.env` file in the `contracts` folder:
+```env
+DEPLOYER_MNEMONIC="your twenty four word mnemonic for algorand testnet"
+```
 
-3. **Clone the Repository** (if not already done):
-   ```bash
-   git clone https://github.com/prasanna9701/EcoTrack.git
-   cd EcoTrack
-   ```
+### 3. Smart Contract Deployment (Optional)
 
-4. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-   This installs all required packages (see [DEPENDENCIES.md](DEPENDENCIES.md) for details).
+If you wish to deploy your own instances of the contracts:
 
-5. **Environment Configuration** (Optional):
-   - The app uses Supabase for backend. Credentials are pre-configured in `src/pages/supabaseClient.js`.
-   - If you need to customize (e.g., your own Supabase project), update the URL and key there.
+```bash
+cd contracts
+npm install
+# To deploy to Testnet
+npx tsx smart_contracts/deploy-config.ts
+```
 
-6. **Run the App**:
-   - Development: `npm start`
-   - Test: `npm test`
-   - Build: `npm run build`
+This script will automatically update `src/config/contractAddresses.js` with the new App IDs.
 
-7. **Deactivate Environment** (when done):
-   ```bash
-   conda deactivate
-   ```
+### 4. Running the Frontend
 
-## Installation & Setup (npm)
+```bash
+# Return to root
+cd ..
+npm start
+```
 
-- **Development Mode**:
-  ```bash
-  npm start
-  ```
-  Opens the app at [http://localhost:3000](http://localhost:3000). The page reloads on changes.
+## ⛓️ Blockchain Integration
 
-- **Testing**:
-  ```bash
-  npm test
-  ```
-  Runs the test suite in interactive watch mode.
+EcoTrack uses 4 core smart contracts on Algorand:
+1. **EmissionAttestation**: Securely notarizes billing data on-chain.
+2. **CarbonCreditToken**: An ASA representing 1 MT of CO2e offset.
+3. **OffsetMarketplace**: Peer-to-peer trading platform for offsets.
+4. **SustainabilityReportNFT**: Identity and performance-based NFTs for corporations.
 
-- **Build for Production**:
-  ```bash
-  npm run build
-  ```
-  Creates an optimized build in the `build/` folder, ready for deployment.
-
-- **Eject** (Advanced - Not Recommended):
-  ```bash
-  npm run eject
-  ```
-  Ejects from Create React App for custom configuration. This is irreversible.
-
-## Project Structure
+## 📂 Project Structure
 
 ```
 EcoTrack/
-├── public/                 # Static assets (HTML, icons, etc.)
+├── contracts/               # Algorand Smart Contracts
+│   ├── smart_contracts/     # Contract source and deployment scripts
+│   └── artifacts/           # Generated App Specs and Clients
+├── public/                  # Static assets
 ├── src/
-│   ├── pages/              # React components (home, emission, login, etc.)
-│   ├── App.js              # Main app component with routing
-│   ├── index.js            # App entry point
-│   └── ...                 # Other React files
-├── supabase/               # Supabase-related files
-├── package.json            # Dependencies and scripts
-├── tailwind.config.js      # Tailwind CSS config
-└── README.md               # This file
+│   ├── components/          # Reusable UI components
+│   ├── config/              # Contract addresses and constants
+│   ├── hooks/               # Custom React hooks (Wallet, Data)
+│   ├── pages/               # Main application pages (EcoAssistant, Dashboard)
+│   └── utils/               # Logic engines (Carbon, OCR, Blockchain)
+└── spec.md                  # Detailed Project Specification
 ```
 
-## Dependencies
+## 📜 Dependencies
 
-For a detailed breakdown of all dependencies and their purposes, see [DEPENDENCIES.md](DEPENDENCIES.md).
+For a full list of libraries and их purposes, see [DEPENDENCIES.md](DEPENDENCIES.md).
 
-## Contributing
+## 👥 Contributors
+- **Prasanna**: lavangamprasanna@gmail.com
+- **Akhil**: akhilreddymogilla@gmail.com
 
-1. Fork the repo and create a feature branch.
-2. Make changes and run tests: `npm test`.
-3. Submit a pull request with a clear description.
-
-## License
-
-This project is private. Contact the owner for usage rights.
-
-## Learn More
-
-- [React Documentation](https://reactjs.org/)
-- [Supabase Docs](https://supabase.com/docs)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Create React App](https://facebook.github.io/create-react-app/docs/getting-started)
-
-
-## Developers 
-prasanna : lavangamprasanna@gmail.com
-Akhil    : akhilreddymogilla@gmail.com
+---
+*EcoTrack is an open-source project dedicated to making sustainability transparent and verifiable through blockchain technology.*
