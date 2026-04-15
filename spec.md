@@ -1,61 +1,54 @@
 # Project Specification: EcoTrack (Carbon AI)
 
 ## Overview
-EcoTrack is a high-fidelity React application designed to monitor, track, and report carbon emissions (Scope 1, 2, and 3) with a focus on data integrity and audit-ready compliance. It leverages AI and local OCR to automate the ingestion of utility data from physical and digital bills.
+EcoTrack is a high-fidelity React application designed to monitor, track, and report carbon emissions (Scope 1, 2, and 3) with a focus on data integrity and audit-ready compliance. It leverages AI, local OCR, and the Algorand blockchain to automate and notarize sustainability data.
 
 ## Core Philosophical Principles
-- **Audit-Ready Integrity**: The system rejects fabricated or "faked" data. All inputs must be traceable to a source (e.g., a utility bill).
-- **Precision Grounding**: Emission calculations are grounded in real-world conversion factors (specifically India-grid factors by default).
-- **Conversational UX**: Data entry is facilitated through an "Eco Assistant" chatbot rather than just complex forms.
+- **Audit-Ready Integrity**: The system rejects fabricated data. All inputs must be traceable to a source (e.g., a utility bill).
+- **Immutable Attestation**: Emission records are notarized on the Algorand blockchain to prevent tampering.
+- **Precision Grounding**: Emission calculations use real-world conversion factors (India-grid default: 0.0008 MT/kWh).
+- **Conversational UX**: Data entry is facilitated through the "Eco Assistant" chatbot.
 
 ## Technology Stack
-- **Frontend**: React 19, Tailwind CSS (Styling), Framer Motion (Animations), Lucide-React/React-Icons (Iconography).
+- **Frontend**: React 19, Tailwind CSS, Framer Motion.
 - **Backend/Auth**: Supabase (PostgreSQL, Auth).
-- **OCR Engine**: Tesseract.js (Local, offline OCR parsing).
-- **Blockchain**: Algorand (Wallet integration via `@txnlab/use-wallet-react` and custom `AlgoWalletProvider`).
-- **State Management**: React Context API (`DataContext`, `WalletProviders`, `SidebarContext`).
+- **OCR Engine**: Tesseract.js (Local, offline parsing).
+- **Blockchain**: Algorand (Testnet).
+- **State Management**: React Context API (`DataContext`, `AlgoWalletProvider`).
+
+## Blockchain Architecture
+
+EcoTrack utilizes 4 interconnected smart contracts on Algorand:
+
+1. **EmissionAttestation**: Notarizes emission records (Utility type, value, timestamp) as on-chain attestations.
+2. **CarbonCreditToken (ASA)**: A custom Algorand Standard Asset representing verified carbon offsets.
+3. **OffsetMarketplace**: A decentralized platform for users to list, buy, and sell carbon credits.
+4. **SustainabilityReportNFT**: Issues unique NFTs representing a company's annual sustainability performance.
 
 ## Functional Modules
 
 ### 1. Eco Assistant (`src/pages/EcoAssistant.js`)
-- An interactive chatbot that acts as a sustainability consultant.
-- **Bill Parsing**: Users upload images/PDFs of bills; the assistant triggers local OCR.
-- **Confirmation Flow**: Extracted data is presented to the user for validation before being synced to the dashboard.
-- **Scenario Modeling**: Handles "What if" queries (e.g., "What if I reduce usage by 20%?").
-- **Carbon Credit Recommendations**: Recommends offsets based on calculated footprint.
+- **Bill Parsing**: Triggers local Tesseract.js OCR to extract billing data.
+- **Verification Loop**: Users confirm extracted data before it is saved to Supabase and notarized on Algorand.
+- **On-chain Notarization**: After confirmation, the assistant calls the `EmissionAttestation` contract.
 
-### 2. Extraction Engine (`src/utils/extractionLogic.js`)
-- Uses Tesseract.js to scan documents for keywords (kWh, SCM, Units, etc.).
-- Implements strict RegEx patterns for various Indian utility providers (BSES, TPDDL, IGL, TSSPDCL).
-- Includes hardcoded fallbacks/mappings for specific sample files to ensure demo stability.
+### 2. Carbon Logic Engine (`src/utils/carbonLogicEngine.js`)
+- **Scope 1 (Gas)**: SCM to Metric Tons of CO2e.
+- **Scope 2 (Electricity)**: kWh to Metric Tons (using `0.0008` MT/kWh for India Grid).
+- **Scope 3 (Travel)**: KM-based calculations for road and air travel.
 
-### 3. Carbon Logic Engine (`src/utils/carbonLogicEngine.js`)
-- Implements the mathematical formulas for carbon footprinting.
-- **Scope 1**: Natural Gas volume to CO2e.
-- **Scope 2**: Purchased Electricity (kWh) to CO2e, using `ELECTRICITY_FACTORS` (India Grid default: `0.0008` MT/kWh).
-- **Scope 3**: Business travel calculations (Car, Flight Short/Long).
-- **Normalization**: All calculations are normalized to Metric Tons (MT).
+### 3. Wallet Integration (`src/utils/AlgoWalletProvider.js`)
+- Powered by `@txnlab/use-wallet-react`.
+- Supports **Pera**, **Defly**, and **Lute/Kibisis** wallets.
+- Manages the `activeAccount` and `signer` for all on-chain interactions.
 
-### 4. Dashboards & Pages
-- **Home**: Overview of total emissions and trends.
-- **Emission**: Detailed breakdown of carbon footprint sources.
-- **Energy**: Focus on electricity and gas usage patterns.
-- **Purchase**: Tracking of procurement-related emissions.
-- **Data**: A tabular view of all ingested records with manual edit/delete capabilities.
-- **Reports**: Generation of audit-ready sustainability narratives.
-
-### 5. Algorand Wallet Integration (`src/utils/AlgoWalletProvider.js`)
-- Supports Pera, Defly, and a custom "Kyra" wallet provider.
-- Handles connecting, disconnecting, and signing transactions for blockchain-based settlement or verification.
-
-## Data Schema (Conceptual)
-- **UtilityItem**: `id`, `type` (Electricity/Gas), `provider`, `billingPeriod`, `value`, `unit`, `billId`, `accountId`, `sourceFileName`, `isEdited`.
+### 4. Marketplace & Credits
+- Users can view their `CarbonCreditToken` balance.
+- Integrated marketplace UI for trading offsets natively on-chain.
 
 ## Key Files for Context
-- `README.md`: High-level overview and setup.
-- `package.json`: Dependency map.
-- `src/App.js`: Routing and provider wrappers.
-- `src/utils/carbonLogicEngine.js`: Calculation logic.
-- `src/utils/extractionLogic.js`: OCR parsing logic.
-- `src/pages/EcoAssistant.js`: AI Agent implementation.
-- `AGENTS.md`: Rules for Algorand development within this repo.
+- `contracts/smart_contracts/deploy-config.ts`: Deployment logic for all 4 contracts.
+- `src/config/contractAddresses.js`: Auto-generated file containing current App IDs.
+- `src/utils/algorandContracts.js`: Helper functions for contract calls.
+- `AGENTS.md`: Canonical rules for Algorand development in this project.
+
