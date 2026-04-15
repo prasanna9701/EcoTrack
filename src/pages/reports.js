@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { useDataContext } from "../context/DataContext";
-import { FaBolt, FaFire, FaFileInvoice, FaCloudUploadAlt } from "react-icons/fa";
+import { FaBolt, FaFire, FaFileInvoice, FaCloudUploadAlt, FaTrashAlt } from "react-icons/fa";
 import { getPriorityExtraction, buildUtilityItemFromSample } from "../utils/extractionLogic";
 
 const pageStyles = {
@@ -79,8 +79,23 @@ const uploadBtnStyles = {
   transition: "all 0.2s ease"
 };
 
+const deleteBtnStyles = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  padding: "6px 10px",
+  borderRadius: "8px",
+  backgroundColor: "#ef4444",
+  color: "#fff",
+  border: "none",
+  cursor: "pointer",
+  fontWeight: 500,
+  fontSize: "12px",
+  transition: "all 0.2s ease",
+};
+
 function Reports() {
-  const { utilityData, addOrUpdateData, setIsProcessing } = useDataContext();
+  const { utilityData, addOrUpdateData, deleteData, setIsProcessing } = useDataContext();
   const fileInputRef = useRef(null);
 
   // Grouping
@@ -120,9 +135,14 @@ function Reports() {
                  <FaFileInvoice color="#4ade80" />
                  <span style={{ fontWeight: 600, color: '#0f172a' }}>{item.provider || 'Unknown Provider'}</span>
               </div>
-              <span style={{ fontSize: '11px', padding:"2px 8px", background:"rgba(22, 163, 74, 0.2)", color:"#bbf7d0", borderRadius:"12px" }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '11px', padding:"2px 8px", background:"rgba(22, 163, 74, 0.2)", color:"#bbf7d0", borderRadius:"12px" }}>
                   {item.isEdited ? 'Manual Entry' : 'Processed'}
-              </span>
+                </span>
+                <button type="button" style={deleteBtnStyles} onClick={() => deleteData(item.id)}>
+                  <FaTrashAlt size={12} /> Remove
+                </button>
+              </div>
           </div>
           
           <div style={gridStyles}>
