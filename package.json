@@ -26,6 +26,8 @@
     "@web3auth/base-provider": "^9.7.0",
     "@web3auth/modal": "^9.7.0",
     "@web3auth/single-factor-auth": "^9.5.0",
+    "ajv": "^8.18.0",
+    "ajv-keywords": "^5.1.0",
     "algosdk": "^3.5.2",
     "buffer": "^6.0.3",
     "framer-motion": "^12.38.0",
